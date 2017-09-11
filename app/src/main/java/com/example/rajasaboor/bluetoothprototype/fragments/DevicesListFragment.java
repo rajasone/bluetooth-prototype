@@ -1,5 +1,6 @@
 package com.example.rajasaboor.bluetoothprototype.fragments;
 
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
+import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.databinding.BluetoothListFragmentBinding;
 
@@ -30,6 +32,8 @@ public class DevicesListFragment extends Fragment implements AdapterView.OnItemC
     private List<String> deviceNameList = new ArrayList<>();
     private ArrayAdapter<String> deviceNameAdapter = null;
 
+    private boolean isNewDeviceFound = false;
+
     public static DevicesListFragment newInstance() {
         return new DevicesListFragment();
     }
@@ -40,6 +44,8 @@ public class DevicesListFragment extends Fragment implements AdapterView.OnItemC
         super.onCreate(savedInstanceState);
         try {
             if (savedInstanceState != null) {
+                Log.d(TAG, "onCreate: Result fetched from the bundle ===> " + savedInstanceState.getBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, false));
+                setNewDeviceFound(savedInstanceState.getBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, false));
                 deviceList = savedInstanceState.getParcelableArrayList("key");
                 for (BluetoothDevice device : deviceList) {
                     deviceNameList.add(device.getName());
@@ -63,7 +69,14 @@ public class DevicesListFragment extends Fragment implements AdapterView.OnItemC
         return listFragmentBinding.getRoot();
     }
 
-    public void setUpListAdapter() {
+    public void resetListAdapter() {
+        deviceNameList.clear();
+        deviceList.clear();
+        deviceNameAdapter.clear();
+        deviceNameAdapter.notifyDataSetChanged();
+    }
+
+    public void refreshListAdapter() {
         if (deviceNameAdapter != null) {
             deviceNameAdapter.notifyDataSetChanged();
         }
@@ -76,12 +89,16 @@ public class DevicesListFragment extends Fragment implements AdapterView.OnItemC
         Log.d(TAG, "onSaveInstanceState: end");
 
         outState.putParcelableArrayList("key", (ArrayList<? extends Parcelable>) deviceList);
+        outState.putBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, isNewDeviceFound());
     }
 
     public void addDeviceInList(BluetoothDevice device) {
         if ((device != null) && (!deviceList.contains(device))) {
+            device.getBluetoothClass();
             deviceList.add(device);
             deviceNameList.add(device.getName());
+            Log.d(TAG, "addDeviceInList: Device Added ===> " + device.getName() + " type ===> " + (device.getBluetoothClass().describeContents()));
+            setNewDeviceFound(true);
         }
     }
 
@@ -91,6 +108,15 @@ public class DevicesListFragment extends Fragment implements AdapterView.OnItemC
 
     public void setDeviceClickListener(OnDeviceClickListener deviceClickListener) {
         this.deviceClickListener = deviceClickListener;
+    }
+
+    public boolean isNewDeviceFound() {
+        return isNewDeviceFound;
+    }
+
+
+    public void setNewDeviceFound(boolean newDeviceFound) {
+        isNewDeviceFound = newDeviceFound;
     }
 
     @Override

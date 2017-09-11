@@ -15,6 +15,7 @@ android {
         buildConfigField "int", "ACCESS_COARSE_LOCATION", "1002"
         buildConfigField "String", "BROADCAST_PREFS_NAME", '"broadcast_info"'
         buildConfigField "String", "BROADCAST_PREFS_KEY", '"status"'
+        buildConfigField "String", "IS_NEW_DEVICE_FOUND_KEY", '"device_found_key"'
     }
 
     dataBinding {

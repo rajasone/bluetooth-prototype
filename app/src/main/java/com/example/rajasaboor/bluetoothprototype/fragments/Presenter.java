@@ -88,27 +88,24 @@ public class Presenter implements Contract.Presenter, DevicesListFragment.OnDevi
     @Override
     public void showSearchFragment(FragmentManager fragmentManager, boolean show) {
         Log.d(TAG, "showSearchFragment: start");
+        Log.d(TAG, "showSearchFragment: Fragment to show ===> " + show);
         SearchFragment searchFragment = (SearchFragment) fragmentManager.findFragmentById(R.id.search_fragment_container);
         FragmentTransaction transaction = null;
         if (searchFragment != null) {
-            Log.d(TAG, "showSearchFragment: Search fragment is not NULL");
+            Log.d(TAG, "showSearchFragment: Search fragment is NOT null");
             transaction = fragmentManager.beginTransaction().setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+        } else {
+            Log.d(TAG, "showSearchFragment: Search fragment is NULL");
         }
 
         if (transaction != null) {
             if (show) {
-                Log.d(TAG, "showSearchFragment: Showing the fragment");
                 transaction.show(searchFragment).commit();
             } else {
-                Log.d(TAG, "showSearchFragment: Hide the fragment");
                 transaction.hide(searchFragment).commit();
             }
         }
         Log.d(TAG, "showSearchFragment: end");
-    }
-
-    public OnDiscoveryComplete getOnDiscoveryComplete() {
-        return onDiscoveryComplete;
     }
 
     public void setOnDiscoveryComplete(OnDiscoveryComplete onDiscoveryComplete) {

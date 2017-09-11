@@ -17,10 +17,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
-import com.example.rajasaboor.bluetoothprototype.SearchFragment;
 import com.example.rajasaboor.bluetoothprototype.databinding.MainFragmentBinding;
 
 /**
@@ -47,7 +47,6 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
             Log.d(TAG, "onCreate: Bundle is empty requesting a permission");
             invokePermissions();
         }
-        // line
         Log.d(TAG, "onCreate: end");
     }
 
@@ -66,15 +65,6 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
         presenter.deleteSharedPrefs();
         Log.d(TAG, "onActivityCreated: end");
     }
-
-//    private void registerTheBluetoothReceiver() {
-//        Log.d(TAG, "registerTheBluetoothReceiver: Function ===> " + presenter.getSharedPreferences(getContext().getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, Context.MODE_PRIVATE)));
-//
-//        if (!presenter.getSharedPreferences(getContext().getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, Context.MODE_PRIVATE))) {
-//            registerBluetoothBroadcast();
-//            presenter.setSharedPreferences(getContext().getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, Context.MODE_PRIVATE));
-//        }
-//    }
 
     private boolean isBaseBluetoothSettingsAreFine() {
         boolean result = false;
@@ -105,6 +95,7 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
     public void onResume() {
         Log.d(TAG, "onResume: start");
         super.onResume();
+        getTheViewInstanceOrNewOne().resetListAdapter();
         registerReceiverAfterChecks();
         Log.d(TAG, "onResume: end");
     }
@@ -118,6 +109,7 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
                 permissionsValidation();
                 unregisterBroadcast();
                 registerReceiverAfterChecks();
+                getTheViewInstanceOrNewOne().resetListAdapter();
             }
         } else {
             Log.e(TAG, "onClick: Device is not supporting the bluetooth");
@@ -132,7 +124,6 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
         Log.d(TAG, "onPause: Result in onPause ===> " + presenter.getSharedPreferences());
 
         unregisterBroadcast();
-        // comment
         Log.d(TAG, "onPause: end");
     }
 
@@ -146,20 +137,30 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
 
     @Override
     public void changeSearchingTextToNoDeviceFound(boolean noDeviceFound) {
+        DevicesListFragment listFragment = getTheViewInstanceOrNewOne();
+
+        if (listFragment != null) {
+            Log.d(TAG, "changeSearchingTextToNoDeviceFound: IS New Device Found ===> " + listFragment.isNewDeviceFound());
+
+            if ((listFragment.getDeviceList() == null || listFragment.getDeviceList().size() == 0) && (!listFragment.isNewDeviceFound())) {
+                Toast.makeText(getContext(), "No Device found", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Devices found", Toast.LENGTH_SHORT).show();
+            }
+            listFragment.setNewDeviceFound(false);
+        }
+    }
+
+    @Override
+    public DevicesListFragment getTheViewInstanceOrNewOne() {
         DevicesListFragment listFragment = (DevicesListFragment) getActivity().getSupportFragmentManager()
                 .findFragmentById(R.id.list_fragment_container);
 
-        if (listFragment != null) {
-            if (listFragment.getDeviceList() == null || listFragment.getDeviceList().size() == 0) {
-                SearchFragment searchFragment = (SearchFragment) getActivity().getSupportFragmentManager()
-                        .findFragmentById(R.id.search_fragment_container);
-
-                if (searchFragment != null) {
-                    searchFragment.changeTextView("No device found");
-                }
-
-            }
+        if (listFragment == null) {
+            listFragment = DevicesListFragment.newInstance();
         }
+
+        return listFragment;
     }
 
     @Override
@@ -172,13 +173,8 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
             listFragment = DevicesListFragment.newInstance();
         }
 
-        try {
-//            listFragment.setDeviceClickListener(((Presenter) presenter));
-            listFragment.addDeviceInList(bluetoothDevice);
-            listFragment.setUpListAdapter();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        listFragment.addDeviceInList(bluetoothDevice);
+        listFragment.refreshListAdapter();
         Log.d(TAG, "onDiscoveryComplete: end");
     }
 

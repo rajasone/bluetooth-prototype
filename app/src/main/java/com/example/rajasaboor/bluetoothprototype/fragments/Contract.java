@@ -22,6 +22,8 @@ public interface Contract {
         void unregisterBroadcast();
 
         void changeSearchingTextToNoDeviceFound(boolean noDeviceFound);
+
+        DevicesListFragment getTheViewInstanceOrNewOne();
     }
 
     interface Presenter {
