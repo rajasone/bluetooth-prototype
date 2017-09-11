@@ -2,18 +2,28 @@ package com.example.rajasaboor.bluetoothprototype.fragments;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.SearchFragment;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.Socket;
+import java.util.UUID;
 
 
 /**
@@ -117,8 +127,40 @@ public class Presenter implements Contract.Presenter, DevicesListFragment.OnDevi
     }
 
     @Override
-    public void onDeviceClickListener(BluetoothDevice device) {
+    public void onDeviceClickListener(final BluetoothDevice device) {
+        BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
         Log.d(TAG, "onDeviceClickListener: Device Name ===> " + device.getName());
+        try {
+            Log.d(TAG, "onDeviceClickListener: UUID ===> " + UUID.randomUUID().toString().toUpperCase());
+            BluetoothAdapter.getDefaultAdapter();
+            final BluetoothSocket socket = device.createRfcommSocketToServiceRecord(UUID.fromString(UUID.randomUUID().toString().toUpperCase()));
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        socket.connect();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Method method = null;
+                        try {
+                            method = device.getClass().getMethod("createBond", (Class[]) null);
+                            method.invoke(device, (Object[]) null);
+
+
+                        } catch (NoSuchMethodException e1) {
+                            e1.printStackTrace();
+                        } catch (InvocationTargetException e1) {
+                            e1.printStackTrace();
+                        } catch (IllegalAccessException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                }
+            }).start();
+        } catch (IOException e) {
+            Log.d(TAG, "onDeviceClickListener: Message ===> " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     interface OnDiscoveryComplete {
