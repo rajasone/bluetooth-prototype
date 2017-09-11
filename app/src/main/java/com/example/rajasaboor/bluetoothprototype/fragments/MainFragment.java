@@ -1,0 +1,256 @@
+package com.example.rajasaboor.bluetoothprototype.fragments;
+
+import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.databinding.DataBindingUtil;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.example.rajasaboor.bluetoothprototype.BuildConfig;
+import com.example.rajasaboor.bluetoothprototype.R;
+import com.example.rajasaboor.bluetoothprototype.SearchFragment;
+import com.example.rajasaboor.bluetoothprototype.databinding.MainFragmentBinding;
+
+/**
+ * Created by rajaSaboor on 9/7/2017.
+ */
+
+public class MainFragment extends Fragment implements Presenter.OnDiscoveryComplete, Contract.FragmentView {
+    private static final String TAG = MainFragment.class.getSimpleName();
+    private Contract.Presenter presenter = null;
+
+
+    public static MainFragment newInstance() {
+        return new MainFragment();
+    }
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate: start");
+        super.onCreate(savedInstanceState);
+
+
+        if (savedInstanceState == null) {
+            Log.d(TAG, "onCreate: Bundle is empty requesting a permission");
+            invokePermissions();
+        }
+        // line
+        Log.d(TAG, "onCreate: end");
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        MainFragmentBinding mainFragmentBinding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false);
+        mainFragmentBinding.setHandler(this);
+        return mainFragmentBinding.getRoot();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated: start");
+        super.onActivityCreated(savedInstanceState);
+        presenter.deleteSharedPrefs();
+        Log.d(TAG, "onActivityCreated: end");
+    }
+
+//    private void registerTheBluetoothReceiver() {
+//        Log.d(TAG, "registerTheBluetoothReceiver: Function ===> " + presenter.getSharedPreferences(getContext().getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, Context.MODE_PRIVATE)));
+//
+//        if (!presenter.getSharedPreferences(getContext().getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, Context.MODE_PRIVATE))) {
+//            registerBluetoothBroadcast();
+//            presenter.setSharedPreferences(getContext().getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, Context.MODE_PRIVATE));
+//        }
+//    }
+
+    private boolean isBaseBluetoothSettingsAreFine() {
+        boolean result = false;
+
+        if (presenter.isDeviceHaveBluetooth() && presenter.isDeviceBluetoothIsTurnedOn() && presenter.isPermissionGranted(getContext().getPackageManager(),
+                Manifest.permission.ACCESS_COARSE_LOCATION, getContext().getPackageName())) {
+            result = true;
+        }
+
+        return result;
+    }
+
+    private void registerReceiverAfterChecks() {
+        Log.d(TAG, "registerReceiverAfterChecks: start");
+        Log.d(TAG, "registerReceiverAfterChecks: Shared Prefs result ===> " + presenter.getSharedPreferences());
+        if ((isBaseBluetoothSettingsAreFine()) && (!presenter.getSharedPreferences())) {
+            // show the fragment
+            presenter.showSearchFragment(getActivity().getSupportFragmentManager(), true);
+            registerBluetoothBroadcast();
+            presenter.setSharedPreferences();
+        } else {
+            Log.e(TAG, "registerReceiverAfterChecks: Device have no bluetooth/bluetooth is off");
+        }
+        Log.d(TAG, "registerReceiverAfterChecks: end");
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(TAG, "onResume: start");
+        super.onResume();
+        registerReceiverAfterChecks();
+        Log.d(TAG, "onResume: end");
+    }
+
+    public void onClick() {
+        Log.d(TAG, "onClick: start");
+        if (presenter.isDeviceHaveBluetooth()) {
+            if (!presenter.isDeviceBluetoothIsTurnedOn()) {
+                openBluetoothPermissionIntent();
+            } else {
+                permissionsValidation();
+                unregisterBroadcast();
+                registerReceiverAfterChecks();
+            }
+        } else {
+            Log.e(TAG, "onClick: Device is not supporting the bluetooth");
+        }
+        Log.d(TAG, "onClick: end");
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause: start");
+        super.onPause();
+        Log.d(TAG, "onPause: Result in onPause ===> " + presenter.getSharedPreferences());
+
+        unregisterBroadcast();
+        // comment
+        Log.d(TAG, "onPause: end");
+    }
+
+    @Override
+    public void unregisterBroadcast() {
+        if (presenter.getSharedPreferences() && presenter.isDeviceBluetoothIsTurnedOn()) {
+            getActivity().unregisterReceiver(((Presenter) presenter).getmReceiver());
+            presenter.deleteSharedPrefs();
+        }
+    }
+
+    @Override
+    public void changeSearchingTextToNoDeviceFound(boolean noDeviceFound) {
+        DevicesListFragment listFragment = (DevicesListFragment) getActivity().getSupportFragmentManager()
+                .findFragmentById(R.id.list_fragment_container);
+
+        if (listFragment != null) {
+            if (listFragment.getDeviceList() == null || listFragment.getDeviceList().size() == 0) {
+                SearchFragment searchFragment = (SearchFragment) getActivity().getSupportFragmentManager()
+                        .findFragmentById(R.id.search_fragment_container);
+
+                if (searchFragment != null) {
+                    searchFragment.changeTextView("No device found");
+                }
+
+            }
+        }
+    }
+
+    @Override
+    public void onDiscoveryComplete(BluetoothDevice bluetoothDevice) {
+        Log.d(TAG, "onDiscoveryComplete: start");
+        DevicesListFragment listFragment = (DevicesListFragment) getActivity().getSupportFragmentManager()
+                .findFragmentById(R.id.list_fragment_container);
+
+        if (listFragment == null) {
+            listFragment = DevicesListFragment.newInstance();
+        }
+
+        try {
+//            listFragment.setDeviceClickListener(((Presenter) presenter));
+            listFragment.addDeviceInList(bluetoothDevice);
+            listFragment.setUpListAdapter();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Log.d(TAG, "onDiscoveryComplete: end");
+    }
+
+    @Override
+    public void onDiscoveryFinish() {
+        presenter.showSearchFragment(getActivity().getSupportFragmentManager(), false);
+        changeSearchingTextToNoDeviceFound(true);
+    }
+
+
+    public void setPresenter(Contract.Presenter presenter) {
+        this.presenter = presenter;
+    }
+
+    @Override
+    public void invokePermissions() {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_DENIED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, BuildConfig.ACCESS_COARSE_LOCATION);
+        }
+    }
+
+    @Override
+    public void permissionsValidation() {
+        int selfPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        if (selfPermission == PackageManager.PERMISSION_DENIED) {
+            boolean result = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+            if ((!result) && (!presenter.isPermissionGranted(getContext().getPackageManager(), Manifest.permission.ACCESS_COARSE_LOCATION, getContext().getPackageName()))) {
+                openAppSettings();
+            } else {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, BuildConfig.ACCESS_COARSE_LOCATION);
+            }
+        }
+    }
+
+    @Override
+    public void registerBluetoothBroadcast() {
+        presenter.broadcastDefine();
+        BluetoothAdapter.getDefaultAdapter().startDiscovery();
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        getActivity().registerReceiver(((Presenter) presenter).getmReceiver(), filter);
+    }
+
+    @Override
+    public void openBluetoothPermissionIntent() {
+        Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(bluetoothIntent, BuildConfig.BLUETOOTH_REQUEST_CODE);
+    }
+
+    @Override
+    public void openAppSettings() {
+        Intent appSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", getContext().getPackageName(), null);
+        Log.d(TAG, "openUpAppSettings: Uri ===> " + uri.toString());
+        appSettings.setData(uri);
+        startActivity(appSettings);
+    }
+
+    /*
+        try {
+            Method method = device.getClass().getMethod("createBond", (Class<?>[]) null);
+            try {
+                method.invoke(device, (Object[]) null);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        */
+}

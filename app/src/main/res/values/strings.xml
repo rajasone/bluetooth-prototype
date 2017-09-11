@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Bluetooth Prototype</string>
+    <string name="action_settings">Settings</string>
+    <string name="searching_string">Searching</string>
+</resources>
