@@ -1,13 +1,16 @@
-package com.example.rajasaboor.bluetoothprototype.fragments;
+package com.example.rajasaboor.bluetoothprototype.search;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.pm.PackageManager;
 import android.support.v4.app.FragmentManager;
+
+import com.example.rajasaboor.bluetoothprototype.list.DevicesListFragment;
 
 /**
  * Created by rajaSaboor on 9/8/2017.
  */
 
-public interface Contract {
+public interface SearchContract {
     interface FragmentView {
         void invokePermissions();
 
@@ -42,5 +45,11 @@ public interface Contract {
         void broadcastDefine();
 
         void showSearchFragment(FragmentManager fragmentManager, boolean show);
+
+        void pairDevice(BluetoothDevice device);
+
+        void unpairDevice(BluetoothDevice device);
+
+        void pairingProcessBroadcast();
     }
 }

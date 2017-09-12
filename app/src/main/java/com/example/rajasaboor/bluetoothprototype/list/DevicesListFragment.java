@@ -1,7 +1,7 @@
-package com.example.rajasaboor.bluetoothprototype.fragments;
+package com.example.rajasaboor.bluetoothprototype.list;
 
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -25,7 +25,7 @@ import java.util.List;
  * Created by rajaSaboor on 9/8/2017.
  */
 
-public class DevicesListFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class DevicesListFragment extends Fragment implements AdapterView.OnItemClickListener, DevicesListContract.View {
     private static final String TAG = DevicesListFragment.class.getSimpleName();
     private List<BluetoothDevice> deviceList = new ArrayList<>();
     private OnDeviceClickListener deviceClickListener = null;
@@ -122,6 +122,9 @@ public class DevicesListFragment extends Fragment implements AdapterView.OnItemC
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         Log.d(TAG, "onItemClick: Size ===> " + deviceList.size());
+
+        IntentFilter bluetoothIntent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+
         deviceClickListener.onDeviceClickListener(deviceList.get(i));
     }
 

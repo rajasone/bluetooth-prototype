@@ -1,4 +1,4 @@
-package com.example.rajasaboor.bluetoothprototype.fragments;
+package com.example.rajasaboor.bluetoothprototype.search;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -22,18 +22,19 @@ import android.widget.Toast;
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.databinding.MainFragmentBinding;
+import com.example.rajasaboor.bluetoothprototype.list.DevicesListFragment;
 
 /**
  * Created by rajaSaboor on 9/7/2017.
  */
 
-public class MainFragment extends Fragment implements Presenter.OnDiscoveryComplete, Contract.FragmentView {
-    private static final String TAG = MainFragment.class.getSimpleName();
-    private Contract.Presenter presenter = null;
+public class SearchFragment extends Fragment implements SearchPresenter.OnDiscoveryComplete, SearchContract.FragmentView {
+    private static final String TAG = SearchFragment.class.getSimpleName();
+    private SearchContract.Presenter presenter = null;
 
 
-    public static MainFragment newInstance() {
-        return new MainFragment();
+    public static SearchFragment newInstance() {
+        return new SearchFragment();
     }
 
 
@@ -130,7 +131,7 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
     @Override
     public void unregisterBroadcast() {
         if (presenter.getSharedPreferences() && presenter.isDeviceBluetoothIsTurnedOn()) {
-            getActivity().unregisterReceiver(((Presenter) presenter).getmReceiver());
+            getActivity().unregisterReceiver(((SearchPresenter) presenter).getmReceiver());
             presenter.deleteSharedPrefs();
         }
     }
@@ -185,7 +186,7 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
     }
 
 
-    public void setPresenter(Contract.Presenter presenter) {
+    public void setPresenter(SearchContract.Presenter presenter) {
         this.presenter = presenter;
     }
 
@@ -217,7 +218,7 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
         BluetoothAdapter.getDefaultAdapter().startDiscovery();
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        getActivity().registerReceiver(((Presenter) presenter).getmReceiver(), filter);
+        getActivity().registerReceiver(((SearchPresenter) presenter).getmReceiver(), filter);
     }
 
     @Override
@@ -234,19 +235,4 @@ public class MainFragment extends Fragment implements Presenter.OnDiscoveryCompl
         appSettings.setData(uri);
         startActivity(appSettings);
     }
-
-    /*
-        try {
-            Method method = device.getClass().getMethod("createBond", (Class<?>[]) null);
-            try {
-                method.invoke(device, (Object[]) null);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        */
 }

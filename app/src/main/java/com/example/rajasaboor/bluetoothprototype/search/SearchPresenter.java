@@ -1,28 +1,25 @@
-package com.example.rajasaboor.bluetoothprototype.fragments;
+package com.example.rajasaboor.bluetoothprototype.search;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.SearchFragment;
+import com.example.rajasaboor.bluetoothprototype.list.DevicesListFragment;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.Socket;
 import java.util.UUID;
 
 
@@ -30,13 +27,14 @@ import java.util.UUID;
  * Created by rajaSaboor on 9/8/2017.
  */
 
-public class Presenter implements Contract.Presenter, DevicesListFragment.OnDeviceClickListener {
-    private static final String TAG = Presenter.class.getSimpleName();
+public class SearchPresenter implements SearchContract.Presenter, DevicesListFragment.OnDeviceClickListener {
+    private static final String TAG = SearchPresenter.class.getSimpleName();
     private OnDiscoveryComplete onDiscoveryComplete = null;
     private BroadcastReceiver mReceiver = null;
     private SharedPreferences preferences = null;
+    private BroadcastReceiver bluetoothReceiver = null;
 
-    public Presenter(SharedPreferences preferences) {
+    public SearchPresenter(SharedPreferences preferences) {
         this.preferences = preferences;
     }
 
@@ -118,6 +116,77 @@ public class Presenter implements Contract.Presenter, DevicesListFragment.OnDevi
         Log.d(TAG, "showSearchFragment: end");
     }
 
+    @Override
+    public void pairDevice(final BluetoothDevice device) {
+        Log.d(TAG, "pairDevice: start");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                BluetoothSocket socket = null;
+                try {
+                    socket = device.createRfcommSocketToServiceRecord(UUID.fromString(UUID.randomUUID().toString()));
+                    socket.connect();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    // if exception occoured then use this fall back  method
+                    try {
+                        Method method = device.getClass().getMethod(BuildConfig.SOCKET_CREATE_BOND_METHOD_NAME, (Class[]) null);
+                        method.invoke(device, (Object[]) null);
+                    } catch (NoSuchMethodException e1) {
+                        e1.printStackTrace();
+                    } catch (InvocationTargetException e1) {
+                        e1.printStackTrace();
+                    } catch (IllegalAccessException e1) {
+                        e1.printStackTrace();
+                    } catch (Exception e1) {
+                        e1.getMessage();
+                    }
+                }
+            }
+        }).start();
+        Log.d(TAG, "pairDevice: end");
+    }
+
+    @Override
+    public void unpairDevice(BluetoothDevice device) {
+        Log.d(TAG, "unpairDevice: start");
+        try {
+            Method method = device.getClass().getMethod(BuildConfig.REMOVE_BOND_METHOD_NAME, (Class<?>[]) null);
+            method.invoke(device, (Object[]) null);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Log.d(TAG, "unpairDevice: end");
+    }
+
+    @Override
+    public void pairingProcessBroadcast() {
+        Log.d(TAG, "pairingProcessBroadcast: start");
+        bluetoothReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(TAG, "onReceive: Intent action ===> " + intent.getAction());
+                if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(intent.getAction())) {
+                    int currentState = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+                    int previousState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
+
+                    if (currentState == BluetoothDevice.BOND_BONDED && previousState == BluetoothDevice.BOND_BONDING) {
+                        Log.d(TAG, "onReceive: Device PAIRED");
+                    } else if (currentState == BluetoothDevice.BOND_NONE && previousState == BluetoothDevice.BOND_BONDED) {
+                        Log.d(TAG, "onReceive: Device UNPAIRED");
+                    }
+                }
+            }
+        };
+        Log.d(TAG, "pairingProcessBroadcast: end");
+    }
+
     public void setOnDiscoveryComplete(OnDiscoveryComplete onDiscoveryComplete) {
         this.onDiscoveryComplete = onDiscoveryComplete;
     }
@@ -130,37 +199,14 @@ public class Presenter implements Contract.Presenter, DevicesListFragment.OnDevi
     public void onDeviceClickListener(final BluetoothDevice device) {
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
         Log.d(TAG, "onDeviceClickListener: Device Name ===> " + device.getName());
-        try {
-            Log.d(TAG, "onDeviceClickListener: UUID ===> " + UUID.randomUUID().toString().toUpperCase());
-            BluetoothAdapter.getDefaultAdapter();
-            final BluetoothSocket socket = device.createRfcommSocketToServiceRecord(UUID.fromString(UUID.randomUUID().toString().toUpperCase()));
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        socket.connect();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Method method = null;
-                        try {
-                            method = device.getClass().getMethod("createBond", (Class[]) null);
-                            method.invoke(device, (Object[]) null);
+        Log.d(TAG, "onDeviceClickListener: UUID ===> " + UUID.randomUUID().toString().toUpperCase());
 
 
-                        } catch (NoSuchMethodException e1) {
-                            e1.printStackTrace();
-                        } catch (InvocationTargetException e1) {
-                            e1.printStackTrace();
-                        } catch (IllegalAccessException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                }
-            }).start();
-        } catch (IOException e) {
-            Log.d(TAG, "onDeviceClickListener: Message ===> " + e.getMessage());
-            e.printStackTrace();
-        }
+        pairDevice(device);
+    }
+
+    public BroadcastReceiver getBluetoothReceiver() {
+        return bluetoothReceiver;
     }
 
     interface OnDiscoveryComplete {
@@ -168,5 +214,4 @@ public class Presenter implements Contract.Presenter, DevicesListFragment.OnDevi
 
         void onDiscoveryFinish();
     }
-
 }

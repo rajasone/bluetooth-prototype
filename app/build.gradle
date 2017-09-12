@@ -16,6 +16,8 @@ android {
         buildConfigField "String", "BROADCAST_PREFS_NAME", '"broadcast_info"'
         buildConfigField "String", "BROADCAST_PREFS_KEY", '"status"'
         buildConfigField "String", "IS_NEW_DEVICE_FOUND_KEY", '"device_found_key"'
+        buildConfigField "String", "SOCKET_CREATE_BOND_METHOD_NAME", '"createBond"'
+        buildConfigField "String", "REMOVE_BOND_METHOD_NAME", '"removeBond"'
     }
 
     dataBinding {

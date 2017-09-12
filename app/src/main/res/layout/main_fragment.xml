@@ -6,7 +6,7 @@
 
         <variable
             name="handler"
-            type="com.example.rajasaboor.bluetoothprototype.fragments.MainFragment" />
+            type="com.example.rajasaboor.bluetoothprototype.search.SearchFragment" />
     </data>
 
     <android.support.constraint.ConstraintLayout

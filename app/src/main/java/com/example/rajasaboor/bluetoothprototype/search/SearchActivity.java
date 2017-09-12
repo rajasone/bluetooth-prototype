@@ -1,4 +1,4 @@
-package com.example.rajasaboor.bluetoothprototype;
+package com.example.rajasaboor.bluetoothprototype.search;
 
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -11,14 +11,13 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.rajasaboor.bluetoothprototype.BuildConfig;
+import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.databinding.ActivityMainBinding;
-import com.example.rajasaboor.bluetoothprototype.fragments.Contract;
-import com.example.rajasaboor.bluetoothprototype.fragments.DevicesListFragment;
-import com.example.rajasaboor.bluetoothprototype.fragments.MainFragment;
-import com.example.rajasaboor.bluetoothprototype.fragments.Presenter;
+import com.example.rajasaboor.bluetoothprototype.list.DevicesListFragment;
 
-public class MainActivity extends AppCompatActivity {
-    private static final String TAG = MainActivity.class.getSimpleName();
+public class SearchActivity extends AppCompatActivity {
+    private static final String TAG = SearchActivity.class.getSimpleName();
     private ActivityMainBinding mainBinding = null;
 
     @Override
@@ -37,23 +36,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        MainFragment mainFragment = (MainFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
+        SearchFragment mainFragment = (SearchFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
         if (mainFragment == null) {
-            mainFragment = MainFragment.newInstance();
+            mainFragment = SearchFragment.newInstance();
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.main_fragment_container, mainFragment)
                     .commit();
         }
 
-        Contract.Presenter presenter = new Presenter(getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, MODE_PRIVATE));
+        SearchContract.Presenter presenter = new SearchPresenter(getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, MODE_PRIVATE));
         mainFragment.setPresenter(presenter);
-        ((Presenter) presenter).setOnDiscoveryComplete(mainFragment);
+        ((SearchPresenter) presenter).setOnDiscoveryComplete(mainFragment);
 
-        SearchFragment searchFragment = (SearchFragment) getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
+        com.example.rajasaboor.bluetoothprototype.SearchFragment searchFragment = (com.example.rajasaboor.bluetoothprototype.SearchFragment) getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
 
         if (searchFragment == null) {
             Log.d(TAG, "onCreate: Search fragment is setting up");
-            searchFragment = SearchFragment.newInstance();
+            searchFragment = com.example.rajasaboor.bluetoothprototype.SearchFragment.newInstance();
             getSupportFragmentManager().beginTransaction().
                     add(R.id.search_fragment_container, searchFragment)
                     .commit();
