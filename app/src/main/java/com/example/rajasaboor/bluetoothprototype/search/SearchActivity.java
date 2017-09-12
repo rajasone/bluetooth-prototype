@@ -14,7 +14,9 @@ import android.view.MenuItem;
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.databinding.ActivityMainBinding;
+import com.example.rajasaboor.bluetoothprototype.list.DevicesListContract;
 import com.example.rajasaboor.bluetoothprototype.list.DevicesListFragment;
+import com.example.rajasaboor.bluetoothprototype.list.DevicesListPresenter;
 
 public class SearchActivity extends AppCompatActivity {
     private static final String TAG = SearchActivity.class.getSimpleName();
@@ -71,7 +73,9 @@ public class SearchActivity extends AppCompatActivity {
                     .commit();
         }
 
-        listFragment.setDeviceClickListener((DevicesListFragment.OnDeviceClickListener) presenter);
+        listFragment.setPresenter(new DevicesListPresenter());
+
+//        listFragment.setDeviceClickListener((DevicesListFragment.OnDeviceClickListener) presenter);
     }
 
 

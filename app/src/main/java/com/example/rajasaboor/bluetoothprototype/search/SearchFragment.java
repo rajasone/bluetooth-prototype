@@ -23,6 +23,7 @@ import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.databinding.MainFragmentBinding;
 import com.example.rajasaboor.bluetoothprototype.list.DevicesListFragment;
+import com.example.rajasaboor.bluetoothprototype.list.DevicesListPresenter;
 
 /**
  * Created by rajaSaboor on 9/7/2017.
@@ -96,7 +97,8 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
     public void onResume() {
         Log.d(TAG, "onResume: start");
         super.onResume();
-        getTheViewInstanceOrNewOne().resetListAdapter();
+//        getTheViewInstanceOrNewOne().resetListAdapter();
+        getTheViewInstanceOrNewOne().resetDeviceListAdapter();
         registerReceiverAfterChecks();
         Log.d(TAG, "onResume: end");
     }
@@ -110,7 +112,8 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
                 permissionsValidation();
                 unregisterBroadcast();
                 registerReceiverAfterChecks();
-                getTheViewInstanceOrNewOne().resetListAdapter();
+//                getTheViewInstanceOrNewOne().resetListAdapter();
+                getTheViewInstanceOrNewOne().resetDeviceListAdapter();
             }
         } else {
             Log.e(TAG, "onClick: Device is not supporting the bluetooth");
@@ -141,14 +144,14 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
         DevicesListFragment listFragment = getTheViewInstanceOrNewOne();
 
         if (listFragment != null) {
-            Log.d(TAG, "changeSearchingTextToNoDeviceFound: IS New Device Found ===> " + listFragment.isNewDeviceFound());
+            Log.d(TAG, "changeSearchingTextToNoDeviceFound: IS New Device Found ===> " + ((DevicesListPresenter) listFragment.getPresenter()).isNewDeviceFound());
 
-            if ((listFragment.getDeviceList() == null || listFragment.getDeviceList().size() == 0) && (!listFragment.isNewDeviceFound())) {
+            if ((((DevicesListPresenter) listFragment.getPresenter()).getDeviceList() == null || ((DevicesListPresenter) listFragment.getPresenter()).getDeviceList().size() == 0) && (!((DevicesListPresenter) listFragment.getPresenter()).isNewDeviceFound())) {
                 Toast.makeText(getContext(), "No Device found", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getContext(), "Devices found", Toast.LENGTH_SHORT).show();
             }
-            listFragment.setNewDeviceFound(false);
+            ((DevicesListPresenter) listFragment.getPresenter()).setNewDeviceFound(false);
         }
     }
 
@@ -174,7 +177,9 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
             listFragment = DevicesListFragment.newInstance();
         }
 
-        listFragment.addDeviceInList(bluetoothDevice);
+//        listFragment.addDeviceInList(bluetoothDevice);
+
+        listFragment.getPresenter().addBluetoothDeviceInList(bluetoothDevice);
         listFragment.refreshListAdapter();
         Log.d(TAG, "onDiscoveryComplete: end");
     }

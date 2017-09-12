@@ -46,10 +46,6 @@ public interface SearchContract {
 
         void showSearchFragment(FragmentManager fragmentManager, boolean show);
 
-        void pairDevice(BluetoothDevice device);
 
-        void unpairDevice(BluetoothDevice device);
-
-        void pairingProcessBroadcast();
     }
 }

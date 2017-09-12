@@ -25,14 +25,11 @@ import java.util.List;
  * Created by rajaSaboor on 9/8/2017.
  */
 
-public class DevicesListFragment extends Fragment implements AdapterView.OnItemClickListener, DevicesListContract.View {
+public class DevicesListFragment extends Fragment implements DevicesListContract.View {
     private static final String TAG = DevicesListFragment.class.getSimpleName();
-    private List<BluetoothDevice> deviceList = new ArrayList<>();
-    private OnDeviceClickListener deviceClickListener = null;
-    private List<String> deviceNameList = new ArrayList<>();
     private ArrayAdapter<String> deviceNameAdapter = null;
-
-    private boolean isNewDeviceFound = false;
+    private DevicesListContract.Presenter presenter = null;
+    private BluetoothListFragmentBinding listFragmentBinding = null;
 
     public static DevicesListFragment newInstance() {
         return new DevicesListFragment();
@@ -45,11 +42,11 @@ public class DevicesListFragment extends Fragment implements AdapterView.OnItemC
         try {
             if (savedInstanceState != null) {
                 Log.d(TAG, "onCreate: Result fetched from the bundle ===> " + savedInstanceState.getBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, false));
-                setNewDeviceFound(savedInstanceState.getBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, false));
-                deviceList = savedInstanceState.getParcelableArrayList("key");
-                for (BluetoothDevice device : deviceList) {
-                    deviceNameList.add(device.getName());
-                }
+                // TODO: 9/12/2017 Is this typecast is a normal thing while getting the members of the presenter ???
+                ((DevicesListPresenter) presenter).setNewDeviceFound(savedInstanceState.getBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, false));
+                ((DevicesListPresenter) presenter).setDeviceList(savedInstanceState.<BluetoothDevice>getParcelableArrayList(BuildConfig.DEVICE_LIST_KEY));
+                presenter.addNameInListFromBluetoothList(((DevicesListPresenter) presenter).getDeviceList());
+
             } else {
                 Log.d(TAG, "onCreate: Bundle is empty");
             }
@@ -62,24 +59,9 @@ public class DevicesListFragment extends Fragment implements AdapterView.OnItemC
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        BluetoothListFragmentBinding listFragmentBinding = DataBindingUtil.inflate(inflater, R.layout.bluetooth_list_fragment, container, false);
-        deviceNameAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, deviceNameList);
-        listFragmentBinding.availiableDevicesListView.setAdapter(deviceNameAdapter);
-        listFragmentBinding.availiableDevicesListView.setOnItemClickListener(this);
+        listFragmentBinding = DataBindingUtil.inflate(inflater, R.layout.bluetooth_list_fragment, container, false);
+        initAdapter();
         return listFragmentBinding.getRoot();
-    }
-
-    public void resetListAdapter() {
-        deviceNameList.clear();
-        deviceList.clear();
-        deviceNameAdapter.clear();
-        deviceNameAdapter.notifyDataSetChanged();
-    }
-
-    public void refreshListAdapter() {
-        if (deviceNameAdapter != null) {
-            deviceNameAdapter.notifyDataSetChanged();
-        }
     }
 
     @Override
@@ -88,47 +70,39 @@ public class DevicesListFragment extends Fragment implements AdapterView.OnItemC
         super.onSaveInstanceState(outState);
         Log.d(TAG, "onSaveInstanceState: end");
 
-        outState.putParcelableArrayList("key", (ArrayList<? extends Parcelable>) deviceList);
-        outState.putBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, isNewDeviceFound());
+        outState.putParcelableArrayList(BuildConfig.DEVICE_LIST_KEY, (ArrayList<? extends Parcelable>) ((DevicesListPresenter) presenter).getDeviceList());
+        outState.putBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, ((DevicesListPresenter) presenter).isNewDeviceFound());
     }
 
-    public void addDeviceInList(BluetoothDevice device) {
-        if ((device != null) && (!deviceList.contains(device))) {
-            device.getBluetoothClass();
-            deviceList.add(device);
-            deviceNameList.add(device.getName());
-            Log.d(TAG, "addDeviceInList: Device Added ===> " + device.getName() + " type ===> " + (device.getBluetoothClass().describeContents()));
-            setNewDeviceFound(true);
-        }
+    public DevicesListContract.Presenter getPresenter() {
+        return presenter;
     }
 
-    public List<BluetoothDevice> getDeviceList() {
-        return deviceList;
-    }
-
-    public void setDeviceClickListener(OnDeviceClickListener deviceClickListener) {
-        this.deviceClickListener = deviceClickListener;
-    }
-
-    public boolean isNewDeviceFound() {
-        return isNewDeviceFound;
-    }
-
-
-    public void setNewDeviceFound(boolean newDeviceFound) {
-        isNewDeviceFound = newDeviceFound;
+    public void setPresenter(DevicesListContract.Presenter presenter) {
+        Log.d(TAG, "setPresenter: start");
+        this.presenter = presenter;
+        Log.d(TAG, "setPresenter: end");
     }
 
     @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        Log.d(TAG, "onItemClick: Size ===> " + deviceList.size());
-
-        IntentFilter bluetoothIntent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-
-        deviceClickListener.onDeviceClickListener(deviceList.get(i));
+    public void initAdapter() {
+        deviceNameAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, ((DevicesListPresenter) presenter).getDeviceNameList());
+        listFragmentBinding.availiableDevicesListView.setAdapter(deviceNameAdapter);
+        listFragmentBinding.availiableDevicesListView.setOnItemClickListener((AdapterView.OnItemClickListener) presenter);
     }
 
-    public interface OnDeviceClickListener {
-        void onDeviceClickListener(BluetoothDevice device);
+    @Override
+    public void resetDeviceListAdapter() {
+        ((DevicesListPresenter) presenter).getDeviceList().clear();
+        ((DevicesListPresenter) presenter).getDeviceNameList().clear();
+        deviceNameAdapter.clear();
+        deviceNameAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void refreshListAdapter() {
+        if (deviceNameAdapter != null) {
+            deviceNameAdapter.notifyDataSetChanged();
+        }
     }
 }
