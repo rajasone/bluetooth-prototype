@@ -19,6 +19,8 @@ android {
         buildConfigField "String", "SOCKET_CREATE_BOND_METHOD_NAME", '"createBond"'
         buildConfigField "String", "REMOVE_BOND_METHOD_NAME", '"removeBond"'
         buildConfigField "String", "DEVICE_LIST_KEY", '"key"'
+        buildConfigField "String", "PAIRED_DEVICES_FILE", '"paired_devices"'
+        buildConfigField "String", "PAIRED_DEVICES_KEY", '"key"'
     }
 
     dataBinding {

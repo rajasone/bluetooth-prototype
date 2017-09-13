@@ -73,7 +73,7 @@ public class SearchActivity extends AppCompatActivity {
                     .commit();
         }
 
-        listFragment.setPresenter(new DevicesListPresenter());
+        listFragment.setPresenter(new DevicesListPresenter(getSharedPreferences(BuildConfig.PAIRED_DEVICES_FILE, MODE_PRIVATE)));
 
 //        listFragment.setDeviceClickListener((DevicesListFragment.OnDeviceClickListener) presenter);
     }

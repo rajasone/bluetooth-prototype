@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.os.Parcel;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,7 +19,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -30,6 +34,11 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
     private List<String> deviceNameList = new ArrayList<>();
     private boolean isNewDeviceFound = false;
     private BroadcastReceiver bluetoothReceiver = null;
+    private SharedPreferences preferences = null;
+
+    public DevicesListPresenter(SharedPreferences preferences) {
+        this.preferences = preferences;
+    }
 
 
     public List<BluetoothDevice> getDeviceList() {
@@ -84,7 +93,44 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
         Log.d(TAG, "handleListClick: Position ===> " + position);
         Log.d(TAG, "handleListClick: Device Name ===> " + deviceNameList.get(position));
 
-        pairDevice(deviceList.get(position));
+        /*
+        if (!isDeviceIsPaired(deviceList.get(position))) {
+            Log.d(TAG, "handleListClick: Device is not pared send the paired request");
+            pairDevice(deviceList.get(position));
+        } else {
+            Log.d(TAG, "handleListClick: Device is already paired start sending some data");
+        }
+        */
+
+        BluetoothDevice device = deviceList.get(position);
+        if (!BluetoothAdapter.getDefaultAdapter().getBondedDevices().contains(deviceList.get(position))) {
+            Log.d(TAG, "handleListClick: Device is not pared send the paired request");
+            pairDevice(deviceList.get(position));
+        } else {
+            Log.d(TAG, "handleListClick: Device is already paired start sending some data");
+            try {
+                BluetoothSocket socket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
+                if (socket != null) {
+                    Log.d(TAG, "handleListClick: Socket is okka ===> " + socket.getRemoteDevice().getName());
+                    if (socket.getOutputStream() != null) {
+                        Log.d(TAG, "handleListClick: Outputstream is oka ===> " + socket.getOutputStream());
+                    } else {
+                        Log.d(TAG, "handleListClick: output stream is null");
+                    }
+
+                } else {
+                    Log.e(TAG, "handleListClick: Socket is NULL");
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         Log.d(TAG, "handleListClick: end");
     }
 
@@ -102,8 +148,10 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
                     e.printStackTrace();
                     // if exception occoured then use this fall back  method
                     try {
-                        Method method = device.getClass().getMethod(BuildConfig.SOCKET_CREATE_BOND_METHOD_NAME, (Class[]) null);
-                        method.invoke(device, (Object[]) null);
+                        Log.d(TAG, "run: in the fall back method");
+                        socket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
+                        socket.connect();
+                        Log.d(TAG, "run: invoking the pair request");
                     } catch (NoSuchMethodException e1) {
                         e1.printStackTrace();
                     } catch (InvocationTargetException e1) {
@@ -151,13 +199,46 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
 
                     if (currentState == BluetoothDevice.BOND_BONDED && previousState == BluetoothDevice.BOND_BONDING) {
                         Log.d(TAG, "onReceive: Device PAIRED");
+                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        Log.d(TAG, "onReceive: Device name ===> " + device.getName());
+                        Log.d(TAG, "onReceive: Device address ===> " + device.getAddress());
+                        saveThePairedDevice(device, true);
                     } else if (currentState == BluetoothDevice.BOND_NONE && previousState == BluetoothDevice.BOND_BONDED) {
                         Log.d(TAG, "onReceive: Device UNPAIRED");
+                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        saveThePairedDevice(device, false);
                     }
                 }
             }
         };
         Log.d(TAG, "pairingProcessBroadcast: end");
+    }
 
+    @Override
+    public void saveThePairedDevice(BluetoothDevice device, boolean save) {
+        Log.d(TAG, "saveThePairedDevice: start");
+        Set<String> temp = getThePairedDevicesFromSharedPrefs();
+        if (save) {
+            temp.add(device.getAddress());
+            preferences.edit().putStringSet(BuildConfig.PAIRED_DEVICES_KEY, temp).apply();
+        } else {
+            temp.remove(device.getAddress());
+            preferences.edit().putStringSet(BuildConfig.PAIRED_DEVICES_KEY, temp).apply();
+        }
+        Log.d(TAG, "saveThePairedDevice: end");
+    }
+
+    @Override
+    public Set<String> getThePairedDevicesFromSharedPrefs() {
+        return preferences.getStringSet(BuildConfig.PAIRED_DEVICES_KEY, new HashSet<String>());
+    }
+
+    @Override
+    public boolean isDeviceIsPaired(BluetoothDevice device) {
+        return getThePairedDevicesFromSharedPrefs().contains(device.getAddress());
+    }
+
+    public BroadcastReceiver getBluetoothReceiver() {
+        return bluetoothReceiver;
     }
 }

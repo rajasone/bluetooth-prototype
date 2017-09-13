@@ -46,13 +46,16 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
                 ((DevicesListPresenter) presenter).setNewDeviceFound(savedInstanceState.getBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, false));
                 ((DevicesListPresenter) presenter).setDeviceList(savedInstanceState.<BluetoothDevice>getParcelableArrayList(BuildConfig.DEVICE_LIST_KEY));
                 presenter.addNameInListFromBluetoothList(((DevicesListPresenter) presenter).getDeviceList());
-
             } else {
                 Log.d(TAG, "onCreate: Bundle is empty");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        presenter.pairingProcessBroadcast();
+        IntentFilter bluetoothIntent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        getActivity().registerReceiver(((DevicesListPresenter) presenter).getBluetoothReceiver(), bluetoothIntent);
         Log.d(TAG, "onCreate: end");
     }
 
