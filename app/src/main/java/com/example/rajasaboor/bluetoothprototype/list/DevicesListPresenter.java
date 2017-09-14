@@ -6,15 +6,15 @@ import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.os.Parcel;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Created by rajaSaboor on 9/12/2017.
@@ -88,7 +87,7 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
     }
 
     @Override
-    public void handleListClick(int position) {
+    public void handleListClick(final int position) {
         Log.d(TAG, "handleListClick: start");
         Log.d(TAG, "handleListClick: Position ===> " + position);
         Log.d(TAG, "handleListClick: Device Name ===> " + deviceNameList.get(position));
@@ -101,19 +100,108 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
             Log.d(TAG, "handleListClick: Device is already paired start sending some data");
         }
         */
-
-        BluetoothDevice device = deviceList.get(position);
+        final BluetoothDevice device = deviceList.get(position);
+        BluetoothSocket socket = null;
         if (!BluetoothAdapter.getDefaultAdapter().getBondedDevices().contains(deviceList.get(position))) {
             Log.d(TAG, "handleListClick: Device is not pared send the paired request");
             pairDevice(deviceList.get(position));
         } else {
             Log.d(TAG, "handleListClick: Device is already paired start sending some data");
+
+            Log.d(TAG, "handleListClick: Paired Device details===============");
+            Log.d(TAG, "handleListClick: Name ===> " + device.getName());
+            for (ParcelUuid uuid : device.getUuids()) {
+                Log.d(TAG, "handleListClick: UUIDS ===> " + uuid.getUuid().toString());
+            }
+            Log.d(TAG, "handleListClick: --------------------------");
+            for (ParcelUuid uuid : device.getUuids()) {
+                Log.d(TAG, "handleListClick: UUIDS ===> " + uuid.getUuid().toString());
+                try {
+                    socket = device.createRfcommSocketToServiceRecord(uuid.getUuid());
+                    socket.connect();
+
+                    if (socket.isConnected()) {
+                        Log.d(TAG, "handleListClick: Socket is connected with this UUID ===> " + uuid.getUuid());
+                        break;
+                    } else {
+                        Log.e(TAG, "handleListClick: Socket is NOT connected with this UUID ===> " + uuid.getUuid());
+                    }
+
+                    Log.d(TAG, "handleListClick: ---------------------");
+                } catch (IOException e) {
+                    Log.d(TAG, "handleListClick: Exception ===> " + e.getMessage());
+                }
+            }
+            Log.d(TAG, "handleListClick: Address ===> " + device.getAddress());
+            Log.d(TAG, "handleListClick: Device bond state ===> " + device.getBondState());
+            Log.d(TAG, "handleListClick: ***************************");
+
+
+            if (socket.isConnected()) {
+                try {
+                    DataOutputStream outputStream =  new DataOutputStream(socket.getOutputStream());
+                    byte[] arr = ("Raja" + " ").getBytes();
+                    arr[arr.length - 1] = 0;
+                    outputStream.write(arr);
+                    Log.d(TAG, "handleListClick: Write to the output stream successfully");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Log.e(TAG, "handleListClick: Socket is NOT connected ");
+            }
+
+
+            /*
+            BluetoothSocket socket = null;
             try {
+                socket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 2);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (socket != null) {
+                    Log.d(TAG, "run: socket is good to go");
+                    socket.connect();
+                    byte[] arr = new byte[1024];
+                    arr = "adads".getBytes();
+                    socket.getOutputStream().write(arr);
+                    Log.d(TAG, "run: write to the stream");
+
+                    DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                    Log.d(TAG, "run: Size of output stream ===> " + String.valueOf(out.size()));
+                } else {
+                    Log.e(TAG, "run: socket is NUll");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            */
+            /*
+            try {
+                Log.d(TAG, "handleListClick: UUID length ===> " + device.getUuids().length);
+
+
                 BluetoothSocket socket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
+                socket.connect();
+
+
                 if (socket != null) {
                     Log.d(TAG, "handleListClick: Socket is okka ===> " + socket.getRemoteDevice().getName());
                     if (socket.getOutputStream() != null) {
                         Log.d(TAG, "handleListClick: Outputstream is oka ===> " + socket.getOutputStream());
+                        DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+                        if (dataOutputStream != null) {
+                            Log.d(TAG, "handleListClick: Size of stream ===> " + dataOutputStream.size());
+                            dataOutputStream.writeBytes("hello");
+                        } else {
+                            Log.e(TAG, "handleListClick: Data output stream is NULL");
+                        }
+                        Log.d(TAG, "handleListClick: Data sent successfully");
                     } else {
                         Log.d(TAG, "handleListClick: output stream is null");
                     }
@@ -121,15 +209,10 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
                 } else {
                     Log.e(TAG, "handleListClick: Socket is NULL");
                 }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Exception e1) {
+                e1.printStackTrace();
             }
+            */
         }
         Log.d(TAG, "handleListClick: end");
     }
@@ -141,27 +224,67 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
             @Override
             public void run() {
                 BluetoothSocket socket = null;
+
+//                    socket = device.createRfcommSocketToServiceRecord(UUID.fromString("7350ae54-c701-4095-84c5-5aaf8c492cbb"));
+                //socket.connect();
+                // if exception occoured then use this fall back  method
+
                 try {
-                    socket = device.createRfcommSocketToServiceRecord(UUID.fromString(UUID.randomUUID().toString()));
-                    socket.connect();
+//                    device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(device.getAddress());
+                    Log.d(TAG, "run: in the fall back method");
+                    if (device.getUuids() != null) {
+                        Log.d(TAG, "run: Contains UUID");
+                    } else {
+                        Log.e(TAG, "run: UUID is NULL");
+                    }
+                    socket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
+                    Log.d(TAG, "run: pair successfully");
+                } catch (NoSuchMethodException e1) {
+                    e1.printStackTrace();
+                } catch (InvocationTargetException e1) {
+                    e1.printStackTrace();
+                } catch (IllegalAccessException e1) {
+                    e1.printStackTrace();
+                } catch (Exception e1) {
+                    e1.getMessage();
+                }
+                try {
+                    if (socket != null)
+                        socket.connect();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    // if exception occoured then use this fall back  method
-                    try {
-                        Log.d(TAG, "run: in the fall back method");
-                        socket = (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
-                        socket.connect();
-                        Log.d(TAG, "run: invoking the pair request");
-                    } catch (NoSuchMethodException e1) {
-                        e1.printStackTrace();
-                    } catch (InvocationTargetException e1) {
-                        e1.printStackTrace();
-                    } catch (IllegalAccessException e1) {
-                        e1.printStackTrace();
-                    } catch (Exception e1) {
-                        e1.getMessage();
-                    }
                 }
+                //7350ae54-c701-4095-84c5-5aaf8c492cbb
+//
+//                BluetoothSocket tmp = null;
+//
+//                try {
+//                    // Get a BluetoothSocket to connect with the given BluetoothDevice.
+//                    // MY_UUID is the app's UUID string, also used in the server code.
+//                    tmp = device.createRfcommSocketToServiceRecord(UUID.fromString(("7350ae54-c701-4095-84c5-5aaf8c492cbb")));
+//                    Log.d(TAG, "run: temp is assigned successfully");
+//                } catch (IOException e) {
+//                    Log.e(TAG, "Socket's create() method failed", e);
+//                }
+//                mSocket = tmp;
+//
+//                try {
+//                    // Connect to the remote device through the socket. This call blocks
+//                    // until it succeeds or throws an exception.
+//                    Log.d(TAG, "run: Connection the socket");
+//                    mSocket.connect();
+//                    Log.d(TAG, "run: Connected");
+//                } catch (IOException connectException) {
+//                    Log.e(TAG, "run: Error while connectiog ===> ", connectException.getCause());
+//                    // Unable to connect; close the socket and return.
+//                    try {
+//                        mSocket.close();
+//                    } catch (IOException closeException) {
+//                        Log.e(TAG, "Could not close the client socket", closeException);
+//                    }
+//                    return;
+//                }
+
             }
         }).start();
         Log.d(TAG, "pairDevice: end");
