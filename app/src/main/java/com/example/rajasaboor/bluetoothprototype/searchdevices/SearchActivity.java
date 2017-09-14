@@ -1,4 +1,4 @@
-package com.example.rajasaboor.bluetoothprototype.search;
+package com.example.rajasaboor.bluetoothprototype.searchdevices;
 
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -13,10 +13,10 @@ import android.view.MenuItem;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
+import com.example.rajasaboor.bluetoothprototype.SearchProgressFragment;
 import com.example.rajasaboor.bluetoothprototype.databinding.ActivityMainBinding;
-import com.example.rajasaboor.bluetoothprototype.list.DevicesListContract;
-import com.example.rajasaboor.bluetoothprototype.list.DevicesListFragment;
-import com.example.rajasaboor.bluetoothprototype.list.DevicesListPresenter;
+import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListFragment;
+import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListPresenter;
 
 public class SearchActivity extends AppCompatActivity {
     private static final String TAG = SearchActivity.class.getSimpleName();
@@ -50,13 +50,13 @@ public class SearchActivity extends AppCompatActivity {
         mainFragment.setPresenter(presenter);
         ((SearchPresenter) presenter).setOnDiscoveryComplete(mainFragment);
 
-        com.example.rajasaboor.bluetoothprototype.SearchFragment searchFragment = (com.example.rajasaboor.bluetoothprototype.SearchFragment) getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
+        SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
 
-        if (searchFragment == null) {
+        if (searchProgressFragment == null) {
             Log.d(TAG, "onCreate: Search fragment is setting up");
-            searchFragment = com.example.rajasaboor.bluetoothprototype.SearchFragment.newInstance();
+            searchProgressFragment = SearchProgressFragment.newInstance();
             getSupportFragmentManager().beginTransaction().
-                    add(R.id.search_fragment_container, searchFragment)
+                    add(R.id.search_fragment_container, searchProgressFragment)
                     .commit();
             Log.d(TAG, "onCreate: Setting up done");
         }

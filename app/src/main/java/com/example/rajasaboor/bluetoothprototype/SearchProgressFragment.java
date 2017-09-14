@@ -14,12 +14,12 @@ import com.example.rajasaboor.bluetoothprototype.databinding.SearchingFragmentBi
  * Created by rajaSaboor on 9/10/2017.
  */
 
-public class SearchFragment extends Fragment {
-    private static final String TAG = SearchFragment.class.getSimpleName();
+public class SearchProgressFragment extends Fragment {
+    private static final String TAG = SearchProgressFragment.class.getSimpleName();
     private SearchingFragmentBinding searchingFragmentBinding = null;
 
-    public static SearchFragment newInstance() {
-        return new SearchFragment();
+    public static SearchProgressFragment newInstance() {
+        return new SearchProgressFragment();
     }
 
     @Nullable

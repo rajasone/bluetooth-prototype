@@ -1,4 +1,4 @@
-package com.example.rajasaboor.bluetoothprototype.list;
+package com.example.rajasaboor.bluetoothprototype.discoverdeviceslist;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

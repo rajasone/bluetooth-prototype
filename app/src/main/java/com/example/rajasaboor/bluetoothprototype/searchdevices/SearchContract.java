@@ -1,10 +1,13 @@
-package com.example.rajasaboor.bluetoothprototype.search;
+package com.example.rajasaboor.bluetoothprototype.searchdevices;
 
-import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.support.v4.app.FragmentManager;
 
-import com.example.rajasaboor.bluetoothprototype.list.DevicesListFragment;
+import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListFragment;
 
 /**
  * Created by rajaSaboor on 9/8/2017.
@@ -12,6 +15,10 @@ import com.example.rajasaboor.bluetoothprototype.list.DevicesListFragment;
 
 public interface SearchContract {
     interface FragmentView {
+        boolean checkSelfPermission(String permission);
+
+        boolean isDeviceHaveBluetoothAndPermissionGranted();
+
         void invokePermissions();
 
         void permissionsValidation();
@@ -46,6 +53,16 @@ public interface SearchContract {
 
         void showSearchFragment(FragmentManager fragmentManager, boolean show);
 
+        IntentFilter getBlutoothDiscoveryIntent();
 
+        BroadcastReceiver getDiscoveryReceiver();
+
+        void setDiscoveryReceiver(BroadcastReceiver receiver);
+
+        SearchPresenter.OnDiscoveryComplete getOnDiscoveryComplete();
+
+        void setOnDiscoveryComplete(SearchPresenter.OnDiscoveryComplete onDiscoveryComplete);
+
+        Intent getSettingsIntent(Uri uri);
     }
 }

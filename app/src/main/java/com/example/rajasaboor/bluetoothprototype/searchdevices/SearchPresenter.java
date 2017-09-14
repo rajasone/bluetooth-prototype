@@ -1,26 +1,22 @@
-package com.example.rajasaboor.bluetoothprototype.search;
+package com.example.rajasaboor.bluetoothprototype.searchdevices;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.provider.Settings;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
-import com.example.rajasaboor.bluetoothprototype.SearchFragment;
-import com.example.rajasaboor.bluetoothprototype.list.DevicesListFragment;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.UUID;
+import com.example.rajasaboor.bluetoothprototype.SearchProgressFragment;
 
 
 /**
@@ -33,7 +29,7 @@ public class SearchPresenter implements SearchContract.Presenter {
     private BroadcastReceiver mReceiver = null;
     private SharedPreferences preferences = null;
 
-    public SearchPresenter(SharedPreferences preferences) {
+    SearchPresenter(SharedPreferences preferences) {
         this.preferences = preferences;
     }
 
@@ -96,9 +92,9 @@ public class SearchPresenter implements SearchContract.Presenter {
     public void showSearchFragment(FragmentManager fragmentManager, boolean show) {
         Log.d(TAG, "showSearchFragment: start");
         Log.d(TAG, "showSearchFragment: Fragment to show ===> " + show);
-        SearchFragment searchFragment = (SearchFragment) fragmentManager.findFragmentById(R.id.search_fragment_container);
+        SearchProgressFragment searchProgressFragment = (SearchProgressFragment) fragmentManager.findFragmentById(R.id.search_fragment_container);
         FragmentTransaction transaction = null;
-        if (searchFragment != null) {
+        if (searchProgressFragment != null) {
             Log.d(TAG, "showSearchFragment: Search fragment is NOT null");
             transaction = fragmentManager.beginTransaction().setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
         } else {
@@ -107,20 +103,50 @@ public class SearchPresenter implements SearchContract.Presenter {
 
         if (transaction != null) {
             if (show) {
-                transaction.show(searchFragment).commit();
+                transaction.show(searchProgressFragment).commit();
             } else {
-                transaction.hide(searchFragment).commit();
+                transaction.hide(searchProgressFragment).commit();
             }
         }
         Log.d(TAG, "showSearchFragment: end");
     }
 
+    @Override
+    public IntentFilter getBlutoothDiscoveryIntent() {
+        broadcastDefine();
+
+        BluetoothAdapter.getDefaultAdapter().startDiscovery();
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+
+        return filter;
+    }
+
+    @Override
     public void setOnDiscoveryComplete(OnDiscoveryComplete onDiscoveryComplete) {
         this.onDiscoveryComplete = onDiscoveryComplete;
     }
 
-    BroadcastReceiver getmReceiver() {
-        return mReceiver;
+    @Override
+    public BroadcastReceiver getDiscoveryReceiver() {
+        return this.mReceiver;
+    }
+
+    @Override
+    public void setDiscoveryReceiver(BroadcastReceiver receiver) {
+        this.mReceiver = receiver;
+    }
+
+    @Override
+    public OnDiscoveryComplete getOnDiscoveryComplete() {
+        return this.onDiscoveryComplete;
+    }
+
+    @Override
+    public Intent getSettingsIntent(Uri uri) {
+        Intent appSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        appSettings.setData(uri);
+        return appSettings;
     }
 
     interface OnDiscoveryComplete {
