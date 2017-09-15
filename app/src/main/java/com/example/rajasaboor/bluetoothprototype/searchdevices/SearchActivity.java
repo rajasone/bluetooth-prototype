@@ -2,6 +2,7 @@ package com.example.rajasaboor.bluetoothprototype.searchdevices;
 
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
@@ -64,10 +65,15 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
             searchProgressFragment = SearchProgressFragment.newInstance();
             getSupportFragmentManager().beginTransaction().
                     add(R.id.search_fragment_container, searchProgressFragment)
+                    .hide(searchProgressFragment)
                     .commit();
             Log.d(TAG, "onCreate: Setting up done");
         }
-        presenter.showSearchFragment(getSupportFragmentManager(), false);
+
+        if ((savedInstanceState != null) && (savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS))) {
+            presenter.showSearchFragment(getSupportFragmentManager(), true);
+            presenter.setDeviceDiscoveryInProgress(true);
+        }
 
         DevicesListFragment listFragment = (DevicesListFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.list_fragment_container);
@@ -86,11 +92,18 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (presenter.isDeviceDiscoveryInProgress()) {
+            presenter.registerBroadcast();
+        }
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         unregisterBluetoothBroadcast();
-
-        // TODO: 9/15/2017 Un-Register the broadcast here
     }
 
     @Override
@@ -99,6 +112,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -116,6 +130,17 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState: start");
+        super.onSaveInstanceState(outState);
+
+        if (presenter.isDeviceDiscoveryInProgress()) {
+            outState.putBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS, true);
+        }
+        Log.d(TAG, "onSaveInstanceState: end");
+    }
+
+    @Override
     public void registerBluetoothBroadcast() {
         Log.e(TAG, "registerBluetoothBroadcast: REGISTER START");
         if (presenter.getDiscoveryReceiver() == null) {
@@ -125,6 +150,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
             Log.e(TAG, "registerBluetoothBroadcast: Broadcast is already define");
         }
         registerReceiver(presenter.getDiscoveryReceiver(), presenter.getBlutoothDiscoveryIntent());
+        presenter.setDeviceDiscoveryInProgress(true);
         Log.e(TAG, "registerBluetoothBroadcast: REGISTER END");
     }
 

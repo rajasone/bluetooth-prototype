@@ -54,5 +54,9 @@ public interface SearchContract {
         Intent getSettingsIntent(Uri uri);
 
         void registerBroadcast();
+
+        boolean isDeviceDiscoveryInProgress();
+
+        void setDeviceDiscoveryInProgress(boolean deviceDiscoveryInProgress);
     }
 }

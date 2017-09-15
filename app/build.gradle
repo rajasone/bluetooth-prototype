@@ -21,6 +21,7 @@ android {
         buildConfigField "String", "DEVICE_LIST_KEY", '"key"'
         buildConfigField "String", "PAIRED_DEVICES_FILE", '"paired_devices"'
         buildConfigField "String", "PAIRED_DEVICES_KEY", '"key"'
+        buildConfigField "String", "IS_SEARCHING_IN_PROGRESS", '"searching_status"'
     }
 
     dataBinding {

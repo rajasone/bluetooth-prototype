@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -101,7 +102,6 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
         }
     }
 
-
     private void registerReceiverAfterChecks() {
         Log.d(TAG, "registerReceiverAfterChecks: start");
         if ((isDeviceHaveBluetoothAndPermissionGranted())) {
@@ -128,22 +128,6 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
     public void openAppSettings() {
         startActivity(presenter.getSettingsIntent(Uri.fromParts("package", getContext().getPackageName(), null)));
     }
-
-//
-//    @Override
-//    public void unregisterBroadcast() {
-//        presenter.unregisterBroadcastReceiver
-//        Log.d(TAG, "unregisterBroadcast: Broadcast status ===> " + presenter.getSharedPreferences());
-//
-//        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(presenter.getDiscoveryReceiver());
-//    }
-//
-//    @Override
-//    public void registerBluetoothBroadcast() {
-//        Log.d(TAG, "registerBluetoothBroadcast: Broadcast status ===> " + presenter.getSharedPreferences());
-//        getActivity().registerReceiver(presenter.getDiscoveryReceiver(), presenter.getBlutoothDiscoveryIntent());
-//    }
-
 
     public DevicesListFragment getTheViewInstanceOrNewOne() {
         DevicesListFragment listFragment = (DevicesListFragment) getActivity().getSupportFragmentManager()

@@ -28,6 +28,7 @@ public class SearchPresenter implements SearchContract.Presenter {
     private OnDiscoveryComplete onDiscoveryComplete = null;
     private BroadcastReceiver mReceiver = null;
     private SharedPreferences preferences = null;
+    private boolean isDeviceDiscoveryInProgress = false;
 
     private SearchContract.FragmentView fragmentView;
     private SearchContract.ActivityView activityView;
@@ -92,8 +93,8 @@ public class SearchPresenter implements SearchContract.Presenter {
 
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
                     Log.d(TAG, "onReceive: Discovery End e");
-                    // TODO: 9/15/2017 question | is this is acceptable way of calling the fragment view method
                     fragmentView.enableSearchButton(true);
+                    setDeviceDiscoveryInProgress(false);
                     onDiscoveryComplete.onDiscoveryFinish();
                 }
                 Log.d(TAG, "onReceive: end");
@@ -117,8 +118,10 @@ public class SearchPresenter implements SearchContract.Presenter {
 
         if (transaction != null) {
             if (show) {
+                Log.d(TAG, "showSearchFragment: Showing the fragment");
                 transaction.show(searchProgressFragment).commit();
             } else {
+                Log.d(TAG, "showSearchFragment: Hide the fragment");
                 transaction.hide(searchProgressFragment).commit();
             }
         }
@@ -168,6 +171,15 @@ public class SearchPresenter implements SearchContract.Presenter {
         fragmentView.enableSearchButton(false);
     }
 
+    @Override
+    public boolean isDeviceDiscoveryInProgress() {
+        return isDeviceDiscoveryInProgress;
+    }
+
+    @Override
+    public void setDeviceDiscoveryInProgress(boolean deviceDiscoveryInProgress) {
+        isDeviceDiscoveryInProgress = deviceDiscoveryInProgress;
+    }
 
     interface OnDiscoveryComplete {
         void onDiscoveryComplete(BluetoothDevice bluetoothDevice);
