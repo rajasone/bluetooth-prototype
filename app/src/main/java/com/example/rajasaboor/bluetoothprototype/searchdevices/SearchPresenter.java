@@ -29,6 +29,7 @@ public class SearchPresenter implements SearchContract.Presenter {
     private BroadcastReceiver mReceiver = null;
     private SharedPreferences preferences = null;
     private boolean isDeviceDiscoveryInProgress = false;
+    private BroadcastReceiver bluetoothEnableReceiver;
 
     private SearchContract.FragmentView fragmentView;
     private SearchContract.ActivityView activityView;
@@ -37,6 +38,7 @@ public class SearchPresenter implements SearchContract.Presenter {
         this.preferences = preferences;
         this.activityView = activityView;
         this.fragmentView = fragmentView;
+
     }
 
     @Override
@@ -79,7 +81,7 @@ public class SearchPresenter implements SearchContract.Presenter {
         Log.d(TAG, "broadcastDefine: start");
         mReceiver = new BroadcastReceiver() {
             @Override
-            public synchronized void onReceive(Context context, Intent intent) {
+            public void onReceive(Context context, Intent intent) {
                 Log.d(TAG, "onReceive: start");
                 if (BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
                     Log.d(TAG, "onReceive: Device Found");
@@ -101,6 +103,28 @@ public class SearchPresenter implements SearchContract.Presenter {
             }
         };
         Log.d(TAG, "broadcastDefine: end");
+    }
+
+    @Override
+    public void defineBluetoothEnableBroadcast() {
+        Log.d(TAG, "defineBluetoothEnableBroadcast: start");
+        bluetoothEnableReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(TAG, "onReceive: Intent action ===> " + intent.getAction());
+                if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
+                    if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+                        Log.d(TAG, "onReceive: Enabled");
+                        fragmentView.showProgressFragment(true);
+                        registerBroadcast();
+                    }
+                    Log.d(TAG, "onReceive: Bluetooth state is changed in enable");
+                }
+            }
+        };
+
+
+        Log.d(TAG, "defineBluetoothEnableBroadcast: end");
     }
 
     @Override
@@ -127,6 +151,7 @@ public class SearchPresenter implements SearchContract.Presenter {
         }
         Log.d(TAG, "showSearchFragment: end");
     }
+
 
     @Override
     public IntentFilter getBlutoothDiscoveryIntent() {
@@ -179,6 +204,16 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void setDeviceDiscoveryInProgress(boolean deviceDiscoveryInProgress) {
         isDeviceDiscoveryInProgress = deviceDiscoveryInProgress;
+    }
+
+    @Override
+    public BroadcastReceiver getBluetoothEnableReceiver() {
+        return bluetoothEnableReceiver;
+    }
+
+    @Override
+    public void setBluetoothEnableReceiver(BroadcastReceiver bluetoothEnableReceiver) {
+        this.bluetoothEnableReceiver = bluetoothEnableReceiver;
     }
 
     interface OnDiscoveryComplete {

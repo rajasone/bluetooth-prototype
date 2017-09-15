@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
+import com.example.rajasaboor.bluetoothprototype.SearchProgressFragment;
 import com.example.rajasaboor.bluetoothprototype.databinding.MainFragmentBinding;
 import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListFragment;
 import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListPresenter;
@@ -73,9 +74,22 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
 
     public void onClick() {
         Log.d(TAG, "onClick: start");
+        if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+            BluetoothAdapter.getDefaultAdapter().enable();
+        }
+
+        /*
         if ((presenter.isDeviceHaveBluetooth()) && (!presenter.isDeviceBluetoothIsTurnedOn())) {
             openBluetoothPermissionIntent();
         } else {
+            permissionsValidation();
+            registerReceiverAfterChecks();
+            //getTheViewInstanceOrNewOne().resetDeviceListAdapter();
+        }
+        */
+
+
+        if (presenter.isDeviceHaveBluetooth()) {
             permissionsValidation();
             registerReceiverAfterChecks();
             //getTheViewInstanceOrNewOne().resetDeviceListAdapter();
@@ -89,6 +103,7 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
     }
 
     public void permissionsValidation() {
+        Log.d(TAG, "permissionsValidation: start");
         int selfPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
 
         if (selfPermission == PackageManager.PERMISSION_DENIED) {
@@ -100,6 +115,7 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
                 requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, BuildConfig.ACCESS_COARSE_LOCATION);
             }
         }
+        Log.d(TAG, "permissionsValidation: end");
     }
 
     private void registerReceiverAfterChecks() {
@@ -107,6 +123,7 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
         if ((isDeviceHaveBluetoothAndPermissionGranted())) {
             // show the fragment
             presenter.showSearchFragment(getActivity().getSupportFragmentManager(), true);
+            showProgressFragment(true);
             presenter.registerBroadcast();
 
             Log.d(TAG, "registerReceiverAfterChecks: Broadcast register successfully");
@@ -189,5 +206,19 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
     @Override
     public void enableSearchButton(boolean enable) {
         mainFragmentBinding.searchBluetoothButton.setEnabled(enable);
+    }
+
+    @Override
+    public void showProgressFragment(boolean show) {
+        SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
+
+        if (searchProgressFragment == null) {
+            Log.d(TAG, "onCreate: Search fragment is setting up");
+            searchProgressFragment = SearchProgressFragment.newInstance();
+            getActivity().getSupportFragmentManager().beginTransaction().
+                    add(R.id.search_fragment_container, searchProgressFragment)
+                    .commit();
+            Log.d(TAG, "onCreate: Setting up done");
+        }
     }
 }

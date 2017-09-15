@@ -20,6 +20,8 @@ public interface SearchContract {
 
     interface FragmentView {
         void enableSearchButton(boolean enable);
+
+        void showProgressFragment(boolean show);
     }
 
     interface Presenter {
@@ -58,5 +60,11 @@ public interface SearchContract {
         boolean isDeviceDiscoveryInProgress();
 
         void setDeviceDiscoveryInProgress(boolean deviceDiscoveryInProgress);
+
+        BroadcastReceiver getBluetoothEnableReceiver();
+
+        void setBluetoothEnableReceiver(BroadcastReceiver bluetoothEnableReceiver);
+
+        void defineBluetoothEnableBroadcast();
     }
 }

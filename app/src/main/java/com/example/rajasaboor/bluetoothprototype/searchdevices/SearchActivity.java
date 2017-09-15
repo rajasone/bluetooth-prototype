@@ -1,5 +1,7 @@
 package com.example.rajasaboor.bluetoothprototype.searchdevices;
 
+import android.bluetooth.BluetoothAdapter;
+import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -55,20 +57,32 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         presenter.setOnDiscoveryComplete(mainFragment);
         presenter.setFragmentView(mainFragment);
 
+        if (presenter.getBluetoothEnableReceiver() == null) {
+            Log.d(TAG, "onCreate: DRegistering the enable or disable broadcast START");
+            presenter.defineBluetoothEnableBroadcast();
+
+            IntentFilter enableFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+            registerReceiver(presenter.getBluetoothEnableReceiver(), enableFilter);
+            Log.d(TAG, "onCreate: DRegistering the enable or disable broadcast END");
+        }
         // TODO: 9/15/2017 Register the receiver
 //        presenter.broadcastDefine();
 
-        SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
+//        SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
 
-        if (searchProgressFragment == null) {
-            Log.d(TAG, "onCreate: Search fragment is setting up");
-            searchProgressFragment = SearchProgressFragment.newInstance();
-            getSupportFragmentManager().beginTransaction().
-                    add(R.id.search_fragment_container, searchProgressFragment)
-                    .hide(searchProgressFragment)
-                    .commit();
-            Log.d(TAG, "onCreate: Setting up done");
-        }
+//        if (searchProgressFragment == null) {
+//            Log.d(TAG, "onCreate: Search fragment is setting up");
+//            searchProgressFragment = SearchProgressFragment.newInstance();
+//            getSupportFragmentManager().beginTransaction().
+//                    add(R.id.search_fragment_container, searchProgressFragment)
+//                    .hide(searchProgressFragment)
+//                    .commit();
+//            Log.d(TAG, "onCreate: Setting up done");
+//        }
+
+
+        if (savedInstanceState != null)
+            Log.d(TAG, "onCreate: Search in progress ===> " + savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS));
 
         if ((savedInstanceState != null) && (savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS))) {
             presenter.showSearchFragment(getSupportFragmentManager(), true);
@@ -104,6 +118,11 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     protected void onPause() {
         super.onPause();
         unregisterBluetoothBroadcast();
+
+        if (presenter.getBluetoothEnableReceiver() != null) {
+            unregisterReceiver(presenter.getBluetoothEnableReceiver());
+            presenter.setBluetoothEnableReceiver(null);
+        }
     }
 
     @Override
