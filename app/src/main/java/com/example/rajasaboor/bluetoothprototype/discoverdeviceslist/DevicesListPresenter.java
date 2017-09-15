@@ -40,6 +40,7 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
     }
 
 
+    @Override
     public List<BluetoothDevice> getDeviceList() {
         return deviceList;
     }
@@ -52,10 +53,12 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
         return deviceNameList;
     }
 
+    @Override
     public boolean isNewDeviceFound() {
         return isNewDeviceFound;
     }
 
+    @Override
     public void setNewDeviceFound(boolean newDeviceFound) {
         isNewDeviceFound = newDeviceFound;
     }
@@ -139,7 +142,7 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
 
             if (socket.isConnected()) {
                 try {
-                    DataOutputStream outputStream =  new DataOutputStream(socket.getOutputStream());
+                    DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
                     byte[] arr = ("Raja" + " ").getBytes();
                     arr[arr.length - 1] = 0;
                     outputStream.write(arr);
@@ -361,6 +364,7 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
         return getThePairedDevicesFromSharedPrefs().contains(device.getAddress());
     }
 
+    @Override
     public BroadcastReceiver getBluetoothReceiver() {
         return bluetoothReceiver;
     }

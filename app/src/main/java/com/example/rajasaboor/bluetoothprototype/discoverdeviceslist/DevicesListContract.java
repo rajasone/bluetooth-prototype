@@ -1,6 +1,7 @@
 package com.example.rajasaboor.bluetoothprototype.discoverdeviceslist;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 
 import java.util.List;
 import java.util.Set;
@@ -19,6 +20,14 @@ public interface DevicesListContract {
     }
 
     interface Presenter {
+        List<BluetoothDevice> getDeviceList();
+
+        BroadcastReceiver getBluetoothReceiver();
+
+        boolean isNewDeviceFound();
+
+        void setNewDeviceFound(boolean newDeviceFound);
+
         void addNameInListFromBluetoothList(List<BluetoothDevice> deviceList);
 
         void addBluetoothDeviceInList(BluetoothDevice device);

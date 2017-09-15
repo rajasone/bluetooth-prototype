@@ -29,8 +29,18 @@ public class SearchPresenter implements SearchContract.Presenter {
     private BroadcastReceiver mReceiver = null;
     private SharedPreferences preferences = null;
 
-    SearchPresenter(SharedPreferences preferences) {
+    private SearchContract.FragmentView fragmentView;
+    private SearchContract.ActivityView activityView;
+
+    SearchPresenter(SharedPreferences preferences, SearchContract.ActivityView activityView, SearchContract.FragmentView fragmentView) {
         this.preferences = preferences;
+        this.activityView = activityView;
+        this.fragmentView = fragmentView;
+    }
+
+    @Override
+    public void setFragmentView(SearchContract.FragmentView view) {
+        fragmentView = view;
     }
 
     @Override
@@ -65,6 +75,7 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     @Override
     public void broadcastDefine() {
+        Log.d(TAG, "broadcastDefine: start");
         mReceiver = new BroadcastReceiver() {
             @Override
             public synchronized void onReceive(Context context, Intent intent) {
@@ -81,11 +92,14 @@ public class SearchPresenter implements SearchContract.Presenter {
 
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
                     Log.d(TAG, "onReceive: Discovery End e");
+                    // TODO: 9/15/2017 question | is this is acceptable way of calling the fragment view method
+                    fragmentView.enableSearchButton(true);
                     onDiscoveryComplete.onDiscoveryFinish();
                 }
                 Log.d(TAG, "onReceive: end");
             }
         };
+        Log.d(TAG, "broadcastDefine: end");
     }
 
     @Override
@@ -113,8 +127,6 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     @Override
     public IntentFilter getBlutoothDiscoveryIntent() {
-        broadcastDefine();
-
         BluetoothAdapter.getDefaultAdapter().startDiscovery();
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
@@ -135,6 +147,7 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void setDiscoveryReceiver(BroadcastReceiver receiver) {
         this.mReceiver = receiver;
+        Log.e(TAG, "setDiscoveryReceiver: Make broadcast NULL");
     }
 
     @Override
@@ -148,6 +161,13 @@ public class SearchPresenter implements SearchContract.Presenter {
         appSettings.setData(uri);
         return appSettings;
     }
+
+    @Override
+    public void registerBroadcast() {
+        activityView.registerBluetoothBroadcast();
+        fragmentView.enableSearchButton(false);
+    }
+
 
     interface OnDiscoveryComplete {
         void onDiscoveryComplete(BluetoothDevice bluetoothDevice);

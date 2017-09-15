@@ -14,29 +14,17 @@ import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesList
  */
 
 public interface SearchContract {
-    interface FragmentView {
-        boolean checkSelfPermission(String permission);
-
-        boolean isDeviceHaveBluetoothAndPermissionGranted();
-
-        void invokePermissions();
-
-        void permissionsValidation();
-
+    interface ActivityView {
         void registerBluetoothBroadcast();
+    }
 
-        void openBluetoothPermissionIntent();
-
-        void openAppSettings();
-
-        void unregisterBroadcast();
-
-        void changeSearchingTextToNoDeviceFound(boolean noDeviceFound);
-
-        DevicesListFragment getTheViewInstanceOrNewOne();
+    interface FragmentView {
+        void enableSearchButton(boolean enable);
     }
 
     interface Presenter {
+        void setFragmentView(FragmentView view);
+
         void deleteSharedPrefs();
 
         boolean getSharedPreferences();
@@ -64,5 +52,7 @@ public interface SearchContract {
         void setOnDiscoveryComplete(SearchPresenter.OnDiscoveryComplete onDiscoveryComplete);
 
         Intent getSettingsIntent(Uri uri);
+
+        void registerBroadcast();
     }
 }

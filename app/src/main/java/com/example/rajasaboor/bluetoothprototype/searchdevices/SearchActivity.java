@@ -4,6 +4,7 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -18,9 +19,11 @@ import com.example.rajasaboor.bluetoothprototype.databinding.ActivityMainBinding
 import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListFragment;
 import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListPresenter;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements SearchContract.ActivityView {
     private static final String TAG = SearchActivity.class.getSimpleName();
     private ActivityMainBinding mainBinding = null;
+
+    private SearchContract.Presenter presenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,9 +49,13 @@ public class SearchActivity extends AppCompatActivity {
                     .commit();
         }
 
-        SearchContract.Presenter presenter = new SearchPresenter(getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, MODE_PRIVATE));
+        presenter = new SearchPresenter(getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, MODE_PRIVATE), this, mainFragment);
         mainFragment.setPresenter(presenter);
-        ((SearchPresenter) presenter).setOnDiscoveryComplete(mainFragment);
+        presenter.setOnDiscoveryComplete(mainFragment);
+        presenter.setFragmentView(mainFragment);
+
+        // TODO: 9/15/2017 Register the receiver
+//        presenter.broadcastDefine();
 
         SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
 
@@ -78,6 +85,13 @@ public class SearchActivity extends AppCompatActivity {
 //        listFragment.setDeviceClickListener((DevicesListFragment.OnDeviceClickListener) presenter);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterBluetoothBroadcast();
+
+        // TODO: 9/15/2017 Un-Register the broadcast here
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -99,5 +113,28 @@ public class SearchActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void registerBluetoothBroadcast() {
+        Log.e(TAG, "registerBluetoothBroadcast: REGISTER START");
+        if (presenter.getDiscoveryReceiver() == null) {
+            Log.d(TAG, "registerBluetoothBroadcast: Defining the broadcast");
+            presenter.broadcastDefine();
+        } else {
+            Log.e(TAG, "registerBluetoothBroadcast: Broadcast is already define");
+        }
+        registerReceiver(presenter.getDiscoveryReceiver(), presenter.getBlutoothDiscoveryIntent());
+        Log.e(TAG, "registerBluetoothBroadcast: REGISTER END");
+    }
+
+    public void unregisterBluetoothBroadcast() {
+        Log.e(TAG, "unregisterBluetoothBroadcast: UN-REGISTER START");
+        if (presenter.getDiscoveryReceiver() != null) {
+            unregisterReceiver(presenter.getDiscoveryReceiver());
+            presenter.setDiscoveryReceiver(null);
+            Log.d(TAG, "unregisterBluetoothBroadcast: Broadcast Unregister Successfully");
+        }
+        Log.e(TAG, "unregisterBluetoothBroadcast: UN-REGISTER START");
     }
 }

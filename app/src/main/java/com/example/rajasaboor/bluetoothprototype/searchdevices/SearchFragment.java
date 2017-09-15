@@ -34,6 +34,7 @@ import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesList
 public class SearchFragment extends Fragment implements SearchPresenter.OnDiscoveryComplete, SearchContract.FragmentView {
     private static final String TAG = SearchFragment.class.getSimpleName();
     private SearchContract.Presenter presenter = null;
+    private MainFragmentBinding mainFragmentBinding;
 
 
     public static SearchFragment newInstance() {
@@ -50,42 +51,23 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
             Log.d(TAG, "onCreate: Bundle is empty requesting a permission");
             invokePermissions();
         }
+
         Log.d(TAG, "onCreate: end");
     }
+
+    public void invokePermissions() {
+        if (!(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION))) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, BuildConfig.ACCESS_COARSE_LOCATION);
+        }
+    }
+
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        MainFragmentBinding mainFragmentBinding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false);
+        mainFragmentBinding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false);
         mainFragmentBinding.setHandler(this);
         return mainFragmentBinding.getRoot();
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onActivityCreated: start");
-        super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "onActivityCreated: end");
-    }
-
-    private void registerReceiverAfterChecks() {
-        Log.d(TAG, "registerReceiverAfterChecks: start");
-        if ((isDeviceHaveBluetoothAndPermissionGranted())) {
-            // show the fragment
-            presenter.showSearchFragment(getActivity().getSupportFragmentManager(), true);
-            registerBluetoothBroadcast();
-            Log.d(TAG, "registerReceiverAfterChecks: Broadcast register successfully");
-        }
-        Log.d(TAG, "registerReceiverAfterChecks: end");
-    }
-
-    @Override
-    public void onResume() {
-        Log.d(TAG, "onResume: start");
-        super.onResume();
-        getTheViewInstanceOrNewOne().resetDeviceListAdapter();
-        registerReceiverAfterChecks();
-        Log.d(TAG, "onResume: end");
     }
 
     public void onClick() {
@@ -94,55 +76,75 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
             openBluetoothPermissionIntent();
         } else {
             permissionsValidation();
-            unregisterBroadcast();
             registerReceiverAfterChecks();
-            getTheViewInstanceOrNewOne().resetDeviceListAdapter();
+            //getTheViewInstanceOrNewOne().resetDeviceListAdapter();
         }
         Log.d(TAG, "onClick: end");
     }
 
-    @Override
-    public void onPause() {
-        Log.d(TAG, "onPause: start");
-        super.onPause();
-
-        unregisterBroadcast();
-        Log.d(TAG, "onPause: end");
+    public void openBluetoothPermissionIntent() {
+        Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(bluetoothIntent, BuildConfig.BLUETOOTH_REQUEST_CODE);
     }
 
-    @Override
-    public void unregisterBroadcast() {
-        if (presenter.isDeviceBluetoothIsTurnedOn() && presenter.getDiscoveryReceiver() != null) {
-            try {
-                LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(presenter.getDiscoveryReceiver());
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } finally {
-                presenter.setDiscoveryReceiver(null);
-            }
-            Log.d(TAG, "unregisterBroadcast: UnRegister the broadcast successfully");
-        } else {
-            Log.e(TAG, "unregisterBroadcast: Failed to unregister broadcast");
-        }
-    }
+    public void permissionsValidation() {
+        int selfPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
 
-    @Override
-    public void changeSearchingTextToNoDeviceFound(boolean noDeviceFound) {
-        DevicesListFragment listFragment = getTheViewInstanceOrNewOne();
+        if (selfPermission == PackageManager.PERMISSION_DENIED) {
+            boolean result = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION);
 
-        if (listFragment != null) {
-            Log.d(TAG, "changeSearchingTextToNoDeviceFound: IS New Device Found ===> " + ((DevicesListPresenter) listFragment.getPresenter()).isNewDeviceFound());
-
-            if ((((DevicesListPresenter) listFragment.getPresenter()).getDeviceList() == null || ((DevicesListPresenter) listFragment.getPresenter()).getDeviceList().size() == 0) && (!((DevicesListPresenter) listFragment.getPresenter()).isNewDeviceFound())) {
-                Toast.makeText(getContext(), "No Device found", Toast.LENGTH_SHORT).show();
+            if ((!result) && (!presenter.isPermissionGranted(getContext().getPackageManager(), Manifest.permission.ACCESS_COARSE_LOCATION, getContext().getPackageName()))) {
+                openAppSettings();
             } else {
-                Toast.makeText(getContext(), "Devices found", Toast.LENGTH_SHORT).show();
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, BuildConfig.ACCESS_COARSE_LOCATION);
             }
-            ((DevicesListPresenter) listFragment.getPresenter()).setNewDeviceFound(false);
         }
     }
 
-    @Override
+
+    private void registerReceiverAfterChecks() {
+        Log.d(TAG, "registerReceiverAfterChecks: start");
+        if ((isDeviceHaveBluetoothAndPermissionGranted())) {
+            // show the fragment
+            presenter.showSearchFragment(getActivity().getSupportFragmentManager(), true);
+            presenter.registerBroadcast();
+
+            Log.d(TAG, "registerReceiverAfterChecks: Broadcast register successfully");
+        }
+        Log.d(TAG, "registerReceiverAfterChecks: end");
+    }
+
+    public boolean isDeviceHaveBluetoothAndPermissionGranted() {
+        boolean result = false;
+
+        if (presenter.isDeviceHaveBluetooth() && presenter.isDeviceBluetoothIsTurnedOn() && presenter.isPermissionGranted(getContext().getPackageManager(),
+                Manifest.permission.ACCESS_COARSE_LOCATION, getContext().getPackageName())) {
+            result = true;
+        }
+
+        return result;
+    }
+
+    public void openAppSettings() {
+        startActivity(presenter.getSettingsIntent(Uri.fromParts("package", getContext().getPackageName(), null)));
+    }
+
+//
+//    @Override
+//    public void unregisterBroadcast() {
+//        presenter.unregisterBroadcastReceiver
+//        Log.d(TAG, "unregisterBroadcast: Broadcast status ===> " + presenter.getSharedPreferences());
+//
+//        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(presenter.getDiscoveryReceiver());
+//    }
+//
+//    @Override
+//    public void registerBluetoothBroadcast() {
+//        Log.d(TAG, "registerBluetoothBroadcast: Broadcast status ===> " + presenter.getSharedPreferences());
+//        getActivity().registerReceiver(presenter.getDiscoveryReceiver(), presenter.getBlutoothDiscoveryIntent());
+//    }
+
+
     public DevicesListFragment getTheViewInstanceOrNewOne() {
         DevicesListFragment listFragment = (DevicesListFragment) getActivity().getSupportFragmentManager()
                 .findFragmentById(R.id.list_fragment_container);
@@ -172,7 +174,22 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
     @Override
     public void onDiscoveryFinish() {
         presenter.showSearchFragment(getActivity().getSupportFragmentManager(), false);
-        changeSearchingTextToNoDeviceFound(true);
+        changeSearchingTextToNoDeviceFound();
+    }
+
+    public void changeSearchingTextToNoDeviceFound() {
+        DevicesListFragment listFragment = getTheViewInstanceOrNewOne();
+
+        if (listFragment != null) {
+            Log.d(TAG, "changeSearchingTextToNoDeviceFound: IS New Device Found ===> " + listFragment.getPresenter().isNewDeviceFound());
+
+            if ((listFragment.getPresenter().getDeviceList() == null || listFragment.getPresenter().getDeviceList().size() == 0) && (!listFragment.getPresenter().isNewDeviceFound())) {
+                Toast.makeText(getContext(), "No Device found", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Devices found", Toast.LENGTH_SHORT).show();
+            }
+            listFragment.getPresenter().setNewDeviceFound(false);
+        }
     }
 
 
@@ -180,58 +197,13 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
         this.presenter = presenter;
     }
 
-    @Override
     public boolean checkSelfPermission(String permission) {
-        return (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+        return (ContextCompat.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_GRANTED);
     }
 
-    @Override
-    public boolean isDeviceHaveBluetoothAndPermissionGranted() {
-        boolean result = false;
-
-        if (presenter.isDeviceHaveBluetooth() && presenter.isDeviceBluetoothIsTurnedOn() && presenter.isPermissionGranted(getContext().getPackageManager(),
-                Manifest.permission.ACCESS_COARSE_LOCATION, getContext().getPackageName())) {
-            result = true;
-        }
-
-        return result;
-    }
 
     @Override
-    public void invokePermissions() {
-        if (!(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION))) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, BuildConfig.ACCESS_COARSE_LOCATION);
-        }
-    }
-
-    @Override
-    public void permissionsValidation() {
-        int selfPermission = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION);
-
-        if (selfPermission == PackageManager.PERMISSION_DENIED) {
-            boolean result = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION);
-
-            if ((!result) && (!presenter.isPermissionGranted(getContext().getPackageManager(), Manifest.permission.ACCESS_COARSE_LOCATION, getContext().getPackageName()))) {
-                openAppSettings();
-            } else {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, BuildConfig.ACCESS_COARSE_LOCATION);
-            }
-        }
-    }
-
-    @Override
-    public void registerBluetoothBroadcast() {
-        getActivity().registerReceiver(presenter.getDiscoveryReceiver(), presenter.getBlutoothDiscoveryIntent());
-    }
-
-    @Override
-    public void openBluetoothPermissionIntent() {
-        Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(bluetoothIntent, BuildConfig.BLUETOOTH_REQUEST_CODE);
-    }
-
-    @Override
-    public void openAppSettings() {
-        startActivity(presenter.getSettingsIntent(Uri.fromParts("package", getContext().getPackageName(), null)));
+    public void enableSearchButton(boolean enable) {
+        mainFragmentBinding.searchBluetoothButton.setEnabled(enable);
     }
 }
