@@ -10,6 +10,7 @@ import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 
@@ -35,7 +36,6 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
     public DevicesListPresenter(DevicesListContract.FragmentView fragmentView) {
         this.fragmentView = fragmentView;
     }
-
 
     @Override
     public List<BluetoothDevice> getDeviceList() {
@@ -65,6 +65,11 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
             fragmentView.showToast("Devices found");
         }
         this.setNewDeviceFound(false);
+    }
+
+    @Override
+    public DevicesListContract.FragmentView getDeviceListFragmentView() {
+        return this.fragmentView;
     }
 
     @Override

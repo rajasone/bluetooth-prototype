@@ -2,6 +2,9 @@ package com.example.rajasaboor.bluetoothprototype.discoverdeviceslist;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
+import android.widget.ArrayAdapter;
+
+import com.example.rajasaboor.bluetoothprototype.searchdevices.SearchContract;
 
 import java.util.List;
 
@@ -47,5 +50,7 @@ public interface DevicesListContract {
         void refreshListAdapter();
 
         void onDeviceDiscoveryComplete();
+
+        DevicesListContract.FragmentView getDeviceListFragmentView();
     }
 }

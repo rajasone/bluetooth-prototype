@@ -55,8 +55,8 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
         super.onSaveInstanceState(outState);
         Log.d(TAG, "onSaveInstanceState: end");
 
-        outState.putParcelableArrayList(BuildConfig.DEVICE_LIST_KEY, (ArrayList<? extends Parcelable>) ((DevicesListPresenter) presenter).getDeviceList());
-        outState.putBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, ((DevicesListPresenter) presenter).isNewDeviceFound());
+        outState.putParcelableArrayList(BuildConfig.DEVICE_LIST_KEY, (ArrayList<? extends Parcelable>) presenter.getDeviceList());
+        outState.putBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, presenter.isNewDeviceFound());
     }
 
     @Override
@@ -66,27 +66,16 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
         try {
             if (savedInstanceState != null) {
                 Log.d(TAG, "onCreate: Result fetched from the bundle ===> " + savedInstanceState.getBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, false));
-                // TODO: 9/12/2017 Is this typecast is a normal thing while getting the members of the presenter ???
-                ((DevicesListPresenter) presenter).setNewDeviceFound(savedInstanceState.getBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, false));
-                ((DevicesListPresenter) presenter).setDeviceList(savedInstanceState.<BluetoothDevice>getParcelableArrayList(BuildConfig.DEVICE_LIST_KEY));
-                presenter.addNameInListFromBluetoothList(((DevicesListPresenter) presenter).getDeviceList());
+                presenter.setNewDeviceFound(savedInstanceState.getBoolean(BuildConfig.IS_NEW_DEVICE_FOUND_KEY, false));
+                presenter.setDeviceList(savedInstanceState.<BluetoothDevice>getParcelableArrayList(BuildConfig.DEVICE_LIST_KEY));
+                presenter.addNameInListFromBluetoothList(presenter.getDeviceList());
             } else {
                 Log.d(TAG, "onCreate: Bundle is empty");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        /*
-        presenter.pairingProcessBroadcast();
-        IntentFilter bluetoothIntent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        getActivity().registerReceiver(((DevicesListPresenter) presenter).getBluetoothReceiver(), bluetoothIntent);
-        */
         Log.d(TAG, "onActivityCreated: end");
-    }
-
-    public DevicesListContract.Presenter getPresenter() {
-        return presenter;
     }
 
     public void setPresenter(DevicesListContract.Presenter presenter) {
@@ -96,17 +85,19 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
     }
 
     public void initAdapter() {
-        deviceNameAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, ((DevicesListPresenter) presenter).getDeviceNameList());
+        deviceNameAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, presenter.getDeviceNameList());
         listFragmentBinding.availiableDevicesListView.setAdapter(deviceNameAdapter);
         listFragmentBinding.availiableDevicesListView.setOnItemClickListener((AdapterView.OnItemClickListener) presenter);
     }
 
     @Override
     public void resetDeviceListAdapter() {
-        ((DevicesListPresenter) presenter).getDeviceList().clear();
-        ((DevicesListPresenter) presenter).getDeviceNameList().clear();
+        Log.d(TAG, "resetDeviceListAdapter: start");
+        presenter.getDeviceList().clear();
+        presenter.getDeviceNameList().clear();
         deviceNameAdapter.clear();
         deviceNameAdapter.notifyDataSetChanged();
+        Log.d(TAG, "resetDeviceListAdapter: end");
     }
 
 

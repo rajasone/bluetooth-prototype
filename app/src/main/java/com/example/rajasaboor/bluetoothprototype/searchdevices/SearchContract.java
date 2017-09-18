@@ -6,6 +6,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 
+import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListContract;
+
 /**
  * Created by rajaSaboor on 9/8/2017.
  */
@@ -18,13 +20,10 @@ public interface SearchContract {
     interface FragmentView {
         void enableSearchButton(boolean enable);
 
-        void showProgressFragment();
-
-        void showSearchFragment(boolean show);
+        void showSearchProgressFragment(boolean show);
     }
 
     interface Presenter {
-//        void setFragmentView(FragmentView view);
 
         boolean isDeviceHaveBluetooth();
 
@@ -53,5 +52,7 @@ public interface SearchContract {
         void setBluetoothEnableReceiver(BroadcastReceiver bluetoothEnableReceiver);
 
         void defineBluetoothEnableBroadcast();
+
+        DevicesListContract.Presenter getListPresenter();
     }
 }

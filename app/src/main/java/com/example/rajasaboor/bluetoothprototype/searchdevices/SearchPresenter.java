@@ -22,7 +22,7 @@ public class SearchPresenter implements SearchContract.Presenter {
     private static final String TAG = SearchPresenter.class.getSimpleName();
     private BroadcastReceiver mReceiver = null;
     private boolean isDeviceDiscoveryInProgress = false;
-    private BroadcastReceiver bluetoothEnableReceiver;
+    private BroadcastReceiver bluetoothEnableReceiver = null;
 
     private final SearchContract.FragmentView fragmentView;
     private final SearchContract.ActivityView activityView;
@@ -34,11 +34,6 @@ public class SearchPresenter implements SearchContract.Presenter {
         this.listPresenter = listPresenter;
 
     }
-//
-//    @Override
-//    public void setFragmentView(SearchContract.FragmentView view) {
-//        fragmentView = view;
-//    }
 
     @Override
     public boolean isDeviceHaveBluetooth() {
@@ -78,7 +73,7 @@ public class SearchPresenter implements SearchContract.Presenter {
                     fragmentView.enableSearchButton(true);
                     setDeviceDiscoveryInProgress(false);
                     listPresenter.onDeviceDiscoveryComplete();
-                    fragmentView.showSearchFragment(false);
+                    fragmentView.showSearchProgressFragment(false);
                 }
                 Log.d(TAG, "onReceive: end");
             }
@@ -92,19 +87,30 @@ public class SearchPresenter implements SearchContract.Presenter {
         bluetoothEnableReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d(TAG, "onReceive: Intent action ===> " + intent.getAction());
-                if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
-                    if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-                        Log.d(TAG, "onReceive: Enabled");
-                        registerBroadcast();
+                final String action = intent.getAction();
+                Log.d(TAG, "onReceive: Enable action ===> " + action);
+                if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                    final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                            BluetoothAdapter.ERROR);
+                    Log.d(TAG, "onReceive: State ====> " + state);
+                    switch (state) {
+                        case BluetoothAdapter.STATE_OFF:
+                            Log.d(TAG, "onReceive: OFF");
+                            break;
+                        case BluetoothAdapter.STATE_ON:
+                            Log.d(TAG, "onReceive: ON");
+                            registerBroadcast();
+                            break;
                     }
-                    Log.d(TAG, "onReceive: Bluetooth state is changed in enable");
                 }
             }
         };
-
-
         Log.d(TAG, "defineBluetoothEnableBroadcast: end");
+    }
+
+    @Override
+    public DevicesListContract.Presenter getListPresenter() {
+        return this.listPresenter;
     }
 
     @Override

@@ -15,13 +15,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.SearchProgressFragment;
 import com.example.rajasaboor.bluetoothprototype.databinding.MainFragmentBinding;
-import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListFragment;
 
 /**
  * Created by rajaSaboor on 9/7/2017.
@@ -57,7 +55,6 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         }
     }
 
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -75,7 +72,9 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         if (presenter.isDeviceHaveBluetooth()) {
             permissionsValidation();
             registerReceiverAfterChecks();
-            //getTheViewInstanceOrNewOne().resetDeviceListAdapter();
+
+            // TODO: 9/18/2017 is this approch is acceptable or not?
+            presenter.getListPresenter().getDeviceListFragmentView().resetDeviceListAdapter();
         }
         Log.d(TAG, "onClick: end");
     }
@@ -104,11 +103,8 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     private void registerReceiverAfterChecks() {
         Log.d(TAG, "registerReceiverAfterChecks: start");
         if ((isDeviceHaveBluetoothAndPermissionGranted())) {
-            // show the progress fragment
 
-//            presenter.showSearchFragment(getActivity().getSupportFragmentManager(), true);
-            showSearchFragment(true);
-            showProgressFragment();
+            showSearchProgressFragment(true);
             presenter.registerBroadcast();
 
             Log.d(TAG, "registerReceiverAfterChecks: Broadcast register successfully");
@@ -131,56 +127,6 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         startActivity(presenter.getSettingsIntent(Uri.fromParts("package", getContext().getPackageName(), null)));
     }
 
-    public DevicesListFragment getTheViewInstanceOrNewOne() {
-        DevicesListFragment listFragment = (DevicesListFragment) getActivity().getSupportFragmentManager()
-                .findFragmentById(R.id.list_fragment_container);
-
-        if (listFragment == null) {
-            listFragment = DevicesListFragment.newInstance();
-        }
-
-        return listFragment;
-    }
-
-    /*
-    @Override
-    public void onDiscoveryComplete(BluetoothDevice bluetoothDevice) {
-        Log.d(TAG, "onDiscoveryComplete: start");
-        DevicesListFragment listFragment = (DevicesListFragment) getActivity().getSupportFragmentManager()
-                .findFragmentById(R.id.list_fragment_container);
-
-        if (listFragment == null) {
-            listFragment = DevicesListFragment.newInstance();
-        }
-
-        listFragment.getPresenter().addBluetoothDeviceInList(bluetoothDevice);
-        listFragment.refreshListAdapter();
-        Log.d(TAG, "onDiscoveryComplete: end");
-    }
-
-    @Override
-    public void onDiscoveryFinish() {
-        presenter.showSearchFragment(getActivity().getSupportFragmentManager(), false);
-        changeSearchingTextToNoDeviceFound();
-    }
-    */
-
-    public void changeSearchingTextToNoDeviceFound() {
-        DevicesListFragment listFragment = getTheViewInstanceOrNewOne();
-
-        if (listFragment != null) {
-            Log.d(TAG, "changeSearchingTextToNoDeviceFound: IS New Device Found ===> " + listFragment.getPresenter().isNewDeviceFound());
-
-            if ((listFragment.getPresenter().getDeviceList() == null || listFragment.getPresenter().getDeviceList().size() == 0) && (!listFragment.getPresenter().isNewDeviceFound())) {
-                Toast.makeText(getContext(), "No Device found", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getContext(), "Devices found", Toast.LENGTH_SHORT).show();
-            }
-            listFragment.getPresenter().setNewDeviceFound(false);
-        }
-    }
-
-
     public void setPresenter(SearchContract.Presenter presenter) {
         this.presenter = presenter;
     }
@@ -189,46 +135,31 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         return (ContextCompat.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_GRANTED);
     }
 
-
     @Override
     public void enableSearchButton(boolean enable) {
         mainFragmentBinding.searchBluetoothButton.setEnabled(enable);
     }
 
     @Override
-    public void showProgressFragment() {
-        SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
-
-        if (searchProgressFragment == null) {
-            Log.d(TAG, "onCreate: Search fragment is setting up");
-            searchProgressFragment = SearchProgressFragment.newInstance();
-            getActivity().getSupportFragmentManager().beginTransaction().
-                    add(R.id.search_fragment_container, searchProgressFragment)
-                    .commit();
-            Log.d(TAG, "onCreate: Setting up done");
-        }
-    }
-
-    @Override
-    public void showSearchFragment(boolean show) {
+    public void showSearchProgressFragment(boolean show) {
         SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
         FragmentTransaction transaction = null;
         if (searchProgressFragment != null) {
-            Log.d(TAG, "showSearchFragment: Search fragment is NOT null");
+            Log.d(TAG, "showSearchProgressFragment: Search fragment is NOT null");
             transaction = getActivity().getSupportFragmentManager().beginTransaction().setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
         } else {
-            Log.d(TAG, "showSearchFragment: Search fragment is NULL");
+            Log.d(TAG, "showSearchProgressFragment: Search fragment is NULL");
         }
 
         if (transaction != null) {
             if (show) {
-                Log.d(TAG, "showSearchFragment: Showing the fragment");
+                Log.d(TAG, "showSearchProgressFragment: Showing the fragment");
                 transaction.show(searchProgressFragment).commit();
             } else {
-                Log.d(TAG, "showSearchFragment: Hide the fragment");
+                Log.d(TAG, "showSearchProgressFragment: Hide the fragment");
                 transaction.hide(searchProgressFragment).commit();
             }
         }
-        Log.d(TAG, "showSearchFragment: end");
+        Log.d(TAG, "showSearchProgressFragment: end");
     }
 }

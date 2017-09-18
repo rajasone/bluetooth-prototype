@@ -13,15 +13,14 @@ android {
 
         buildConfigField "int", "BLUETOOTH_REQUEST_CODE", "1001"
         buildConfigField "int", "ACCESS_COARSE_LOCATION", "1002"
-        buildConfigField "String", "BROADCAST_PREFS_NAME", '"broadcast_info"'
-        buildConfigField "String", "BROADCAST_PREFS_KEY", '"status"'
         buildConfigField "String", "IS_NEW_DEVICE_FOUND_KEY", '"device_found_key"'
         buildConfigField "String", "SOCKET_CREATE_BOND_METHOD_NAME", '"createBond"'
         buildConfigField "String", "REMOVE_BOND_METHOD_NAME", '"removeBond"'
         buildConfigField "String", "DEVICE_LIST_KEY", '"key"'
-        buildConfigField "String", "PAIRED_DEVICES_FILE", '"paired_devices"'
-        buildConfigField "String", "PAIRED_DEVICES_KEY", '"key"'
         buildConfigField "String", "IS_SEARCHING_IN_PROGRESS", '"searching_status"'
+        buildConfigField "int", "SEARCH_FRAGMENT", "1"
+        buildConfigField "int", "SEARCH_PROGRESS_FRAGMENT", "2"
+        buildConfigField "int", "DEVICE_LIST_FRAGMENT", "3"
     }
 
     dataBinding {
