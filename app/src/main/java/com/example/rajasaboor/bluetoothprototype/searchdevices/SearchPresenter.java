@@ -6,17 +6,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.Settings;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
-import com.example.rajasaboor.bluetoothprototype.BuildConfig;
-import com.example.rajasaboor.bluetoothprototype.R;
-import com.example.rajasaboor.bluetoothprototype.SearchProgressFragment;
+import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListContract;
 
 
 /**
@@ -25,41 +20,25 @@ import com.example.rajasaboor.bluetoothprototype.SearchProgressFragment;
 
 public class SearchPresenter implements SearchContract.Presenter {
     private static final String TAG = SearchPresenter.class.getSimpleName();
-    private OnDiscoveryComplete onDiscoveryComplete = null;
     private BroadcastReceiver mReceiver = null;
-    private SharedPreferences preferences = null;
     private boolean isDeviceDiscoveryInProgress = false;
     private BroadcastReceiver bluetoothEnableReceiver;
 
-    private SearchContract.FragmentView fragmentView;
-    private SearchContract.ActivityView activityView;
+    private final SearchContract.FragmentView fragmentView;
+    private final SearchContract.ActivityView activityView;
+    private final DevicesListContract.Presenter listPresenter;
 
-    SearchPresenter(SharedPreferences preferences, SearchContract.ActivityView activityView, SearchContract.FragmentView fragmentView) {
-        this.preferences = preferences;
+    SearchPresenter(SearchContract.ActivityView activityView, SearchContract.FragmentView fragmentView, DevicesListContract.Presenter listPresenter) {
         this.activityView = activityView;
         this.fragmentView = fragmentView;
+        this.listPresenter = listPresenter;
 
     }
-
-    @Override
-    public void setFragmentView(SearchContract.FragmentView view) {
-        fragmentView = view;
-    }
-
-    @Override
-    public void deleteSharedPrefs() {
-        preferences.edit().clear().apply();
-    }
-
-    @Override
-    public boolean getSharedPreferences() {
-        return preferences.getBoolean(BuildConfig.BROADCAST_PREFS_KEY, false);
-    }
-
-    @Override
-    public void setSharedPreferences() {
-        preferences.edit().putBoolean(BuildConfig.BROADCAST_PREFS_KEY, true).apply();
-    }
+//
+//    @Override
+//    public void setFragmentView(SearchContract.FragmentView view) {
+//        fragmentView = view;
+//    }
 
     @Override
     public boolean isDeviceHaveBluetooth() {
@@ -88,16 +67,18 @@ public class SearchPresenter implements SearchContract.Presenter {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                     if ((device.getName() != null)) {
-                        onDiscoveryComplete.onDiscoveryComplete(device);
+                        listPresenter.addBluetoothDeviceInList(device);
+                        listPresenter.refreshListAdapter();
                     } else {
                         Log.e(TAG, "onReceive: Device is not full filling the condition ===> " + device.getName());
                     }
 
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
-                    Log.d(TAG, "onReceive: Discovery End e");
+                    Log.d(TAG, "onReceive: Discovery End");
                     fragmentView.enableSearchButton(true);
                     setDeviceDiscoveryInProgress(false);
-                    onDiscoveryComplete.onDiscoveryFinish();
+                    listPresenter.onDeviceDiscoveryComplete();
+                    fragmentView.showSearchFragment(false);
                 }
                 Log.d(TAG, "onReceive: end");
             }
@@ -115,7 +96,6 @@ public class SearchPresenter implements SearchContract.Presenter {
                 if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
                     if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
                         Log.d(TAG, "onReceive: Enabled");
-                        fragmentView.showProgressFragment(true);
                         registerBroadcast();
                     }
                     Log.d(TAG, "onReceive: Bluetooth state is changed in enable");
@@ -128,43 +108,12 @@ public class SearchPresenter implements SearchContract.Presenter {
     }
 
     @Override
-    public void showSearchFragment(FragmentManager fragmentManager, boolean show) {
-        Log.d(TAG, "showSearchFragment: start");
-        Log.d(TAG, "showSearchFragment: Fragment to show ===> " + show);
-        SearchProgressFragment searchProgressFragment = (SearchProgressFragment) fragmentManager.findFragmentById(R.id.search_fragment_container);
-        FragmentTransaction transaction = null;
-        if (searchProgressFragment != null) {
-            Log.d(TAG, "showSearchFragment: Search fragment is NOT null");
-            transaction = fragmentManager.beginTransaction().setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-        } else {
-            Log.d(TAG, "showSearchFragment: Search fragment is NULL");
-        }
-
-        if (transaction != null) {
-            if (show) {
-                Log.d(TAG, "showSearchFragment: Showing the fragment");
-                transaction.show(searchProgressFragment).commit();
-            } else {
-                Log.d(TAG, "showSearchFragment: Hide the fragment");
-                transaction.hide(searchProgressFragment).commit();
-            }
-        }
-        Log.d(TAG, "showSearchFragment: end");
-    }
-
-
-    @Override
     public IntentFilter getBlutoothDiscoveryIntent() {
         BluetoothAdapter.getDefaultAdapter().startDiscovery();
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 
         return filter;
-    }
-
-    @Override
-    public void setOnDiscoveryComplete(OnDiscoveryComplete onDiscoveryComplete) {
-        this.onDiscoveryComplete = onDiscoveryComplete;
     }
 
     @Override
@@ -176,11 +125,6 @@ public class SearchPresenter implements SearchContract.Presenter {
     public void setDiscoveryReceiver(BroadcastReceiver receiver) {
         this.mReceiver = receiver;
         Log.e(TAG, "setDiscoveryReceiver: Make broadcast NULL");
-    }
-
-    @Override
-    public OnDiscoveryComplete getOnDiscoveryComplete() {
-        return this.onDiscoveryComplete;
     }
 
     @Override
@@ -214,11 +158,5 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void setBluetoothEnableReceiver(BroadcastReceiver bluetoothEnableReceiver) {
         this.bluetoothEnableReceiver = bluetoothEnableReceiver;
-    }
-
-    interface OnDiscoveryComplete {
-        void onDiscoveryComplete(BluetoothDevice bluetoothDevice);
-
-        void onDiscoveryFinish();
     }
 }

@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
@@ -19,9 +18,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by rajaSaboor on 9/12/2017.
@@ -33,10 +30,10 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
     private List<String> deviceNameList = new ArrayList<>();
     private boolean isNewDeviceFound = false;
     private BroadcastReceiver bluetoothReceiver = null;
-    private SharedPreferences preferences = null;
+    private final DevicesListContract.FragmentView fragmentView;
 
-    public DevicesListPresenter(SharedPreferences preferences) {
-        this.preferences = preferences;
+    public DevicesListPresenter(DevicesListContract.FragmentView fragmentView) {
+        this.fragmentView = fragmentView;
     }
 
 
@@ -45,12 +42,29 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
         return deviceList;
     }
 
+    @Override
     public void setDeviceList(List<BluetoothDevice> deviceList) {
         this.deviceList = deviceList;
     }
 
+    @Override
     public List<String> getDeviceNameList() {
         return deviceNameList;
+    }
+
+    @Override
+    public void refreshListAdapter() {
+        fragmentView.refreshListAdapter();
+    }
+
+    @Override
+    public void onDeviceDiscoveryComplete() {
+        if ((this.getDeviceList() == null || this.getDeviceList().size() == 0) && (!this.isNewDeviceFound())) {
+            fragmentView.showToast("No Device found");
+        } else {
+            fragmentView.showToast("Devices found");
+        }
+        this.setNewDeviceFound(false);
     }
 
     @Override
@@ -328,40 +342,14 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
                         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                         Log.d(TAG, "onReceive: Device name ===> " + device.getName());
                         Log.d(TAG, "onReceive: Device address ===> " + device.getAddress());
-                        saveThePairedDevice(device, true);
                     } else if (currentState == BluetoothDevice.BOND_NONE && previousState == BluetoothDevice.BOND_BONDED) {
                         Log.d(TAG, "onReceive: Device UNPAIRED");
                         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                        saveThePairedDevice(device, false);
                     }
                 }
             }
         };
         Log.d(TAG, "pairingProcessBroadcast: end");
-    }
-
-    @Override
-    public void saveThePairedDevice(BluetoothDevice device, boolean save) {
-        Log.d(TAG, "saveThePairedDevice: start");
-        Set<String> temp = getThePairedDevicesFromSharedPrefs();
-        if (save) {
-            temp.add(device.getAddress());
-            preferences.edit().putStringSet(BuildConfig.PAIRED_DEVICES_KEY, temp).apply();
-        } else {
-            temp.remove(device.getAddress());
-            preferences.edit().putStringSet(BuildConfig.PAIRED_DEVICES_KEY, temp).apply();
-        }
-        Log.d(TAG, "saveThePairedDevice: end");
-    }
-
-    @Override
-    public Set<String> getThePairedDevicesFromSharedPrefs() {
-        return preferences.getStringSet(BuildConfig.PAIRED_DEVICES_KEY, new HashSet<String>());
-    }
-
-    @Override
-    public boolean isDeviceIsPaired(BluetoothDevice device) {
-        return getThePairedDevicesFromSharedPrefs().contains(device.getAddress());
     }
 
     @Override

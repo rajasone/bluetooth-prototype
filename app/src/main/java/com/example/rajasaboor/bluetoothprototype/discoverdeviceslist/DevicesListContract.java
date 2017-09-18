@@ -4,19 +4,19 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by rajaSaboor on 9/12/2017.
  */
 
 public interface DevicesListContract {
-    interface View {
-        void initAdapter();
-
+    interface FragmentView {
         void resetDeviceListAdapter();
 
         void refreshListAdapter();
+
+        void showToast(String message);
+
     }
 
     interface Presenter {
@@ -40,10 +40,12 @@ public interface DevicesListContract {
 
         void pairingProcessBroadcast();
 
-        void saveThePairedDevice(BluetoothDevice device, boolean save);
+        void setDeviceList(List<BluetoothDevice> deviceList);
 
-        Set<String> getThePairedDevicesFromSharedPrefs();
+        List<String> getDeviceNameList();
 
-        boolean isDeviceIsPaired(BluetoothDevice device);
+        void refreshListAdapter();
+
+        void onDeviceDiscoveryComplete();
     }
 }

@@ -4,21 +4,19 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
-import com.example.rajasaboor.bluetoothprototype.SearchProgressFragment;
 import com.example.rajasaboor.bluetoothprototype.databinding.ActivityMainBinding;
+import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListContract;
 import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListFragment;
 import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListPresenter;
 
@@ -44,6 +42,21 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
             }
         });
 
+
+        DevicesListFragment listFragment = (DevicesListFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.list_fragment_container);
+
+        if (listFragment == null) {
+            Log.d(TAG, "addListFragment: List fragment is NULL");
+            listFragment = DevicesListFragment.newInstance();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.list_fragment_container, listFragment)
+                    .commit();
+        }
+        DevicesListContract.Presenter devicePresenter = new DevicesListPresenter(listFragment);
+        listFragment.setPresenter(devicePresenter);
+
+
         SearchFragment mainFragment = (SearchFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
         if (mainFragment == null) {
             mainFragment = SearchFragment.newInstance();
@@ -52,10 +65,9 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
                     .commit();
         }
 
-        presenter = new SearchPresenter(getSharedPreferences(BuildConfig.BROADCAST_PREFS_NAME, MODE_PRIVATE), this, mainFragment);
+        presenter = new SearchPresenter(this, mainFragment, devicePresenter);
         mainFragment.setPresenter(presenter);
-        presenter.setOnDiscoveryComplete(mainFragment);
-        presenter.setFragmentView(mainFragment);
+//        presenter.setFragmentView(mainFragment);
 
         if (presenter.getBluetoothEnableReceiver() == null) {
             Log.d(TAG, "onCreate: DRegistering the enable or disable broadcast START");
@@ -85,23 +97,9 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
             Log.d(TAG, "onCreate: Search in progress ===> " + savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS));
 
         if ((savedInstanceState != null) && (savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS))) {
-            presenter.showSearchFragment(getSupportFragmentManager(), true);
+            mainFragment.showSearchFragment(true);
             presenter.setDeviceDiscoveryInProgress(true);
         }
-
-        DevicesListFragment listFragment = (DevicesListFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.list_fragment_container);
-
-        if (listFragment == null) {
-            Log.d(TAG, "addListFragment: List fragment is NULL");
-            listFragment = DevicesListFragment.newInstance();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.list_fragment_container, listFragment)
-                    .commit();
-        }
-
-        listFragment.setPresenter(new DevicesListPresenter(getSharedPreferences(BuildConfig.PAIRED_DEVICES_FILE, MODE_PRIVATE)));
-
 //        listFragment.setDeviceClickListener((DevicesListFragment.OnDeviceClickListener) presenter);
     }
 

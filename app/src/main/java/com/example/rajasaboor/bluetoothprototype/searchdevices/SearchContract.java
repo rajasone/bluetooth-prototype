@@ -5,9 +5,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.support.v4.app.FragmentManager;
-
-import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListFragment;
 
 /**
  * Created by rajaSaboor on 9/8/2017.
@@ -21,17 +18,13 @@ public interface SearchContract {
     interface FragmentView {
         void enableSearchButton(boolean enable);
 
-        void showProgressFragment(boolean show);
+        void showProgressFragment();
+
+        void showSearchFragment(boolean show);
     }
 
     interface Presenter {
-        void setFragmentView(FragmentView view);
-
-        void deleteSharedPrefs();
-
-        boolean getSharedPreferences();
-
-        void setSharedPreferences();
+//        void setFragmentView(FragmentView view);
 
         boolean isDeviceHaveBluetooth();
 
@@ -41,17 +34,11 @@ public interface SearchContract {
 
         void broadcastDefine();
 
-        void showSearchFragment(FragmentManager fragmentManager, boolean show);
-
         IntentFilter getBlutoothDiscoveryIntent();
 
         BroadcastReceiver getDiscoveryReceiver();
 
         void setDiscoveryReceiver(BroadcastReceiver receiver);
-
-        SearchPresenter.OnDiscoveryComplete getOnDiscoveryComplete();
-
-        void setOnDiscoveryComplete(SearchPresenter.OnDiscoveryComplete onDiscoveryComplete);
 
         Intent getSettingsIntent(Uri uri);
 

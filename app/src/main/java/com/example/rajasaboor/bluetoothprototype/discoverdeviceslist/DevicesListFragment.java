@@ -1,7 +1,6 @@
 package com.example.rajasaboor.bluetoothprototype.discoverdeviceslist;
 
 import android.bluetooth.BluetoothDevice;
-import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -13,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * Created by rajaSaboor on 9/8/2017.
  */
 
-public class DevicesListFragment extends Fragment implements DevicesListContract.View {
+public class DevicesListFragment extends Fragment implements DevicesListContract.FragmentView {
     private static final String TAG = DevicesListFragment.class.getSimpleName();
     private ArrayAdapter<String> deviceNameAdapter = null;
     private DevicesListContract.Presenter presenter = null;
@@ -95,7 +95,6 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
         Log.d(TAG, "setPresenter: end");
     }
 
-    @Override
     public void initAdapter() {
         deviceNameAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, ((DevicesListPresenter) presenter).getDeviceNameList());
         listFragmentBinding.availiableDevicesListView.setAdapter(deviceNameAdapter);
@@ -110,10 +109,16 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
         deviceNameAdapter.notifyDataSetChanged();
     }
 
+
     @Override
     public void refreshListAdapter() {
         if (deviceNameAdapter != null) {
             deviceNameAdapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void showToast(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 }

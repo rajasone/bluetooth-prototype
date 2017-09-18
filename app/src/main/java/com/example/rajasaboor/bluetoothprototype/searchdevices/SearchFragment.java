@@ -2,20 +2,15 @@ package com.example.rajasaboor.bluetoothprototype.searchdevices;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,13 +22,12 @@ import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.SearchProgressFragment;
 import com.example.rajasaboor.bluetoothprototype.databinding.MainFragmentBinding;
 import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListFragment;
-import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListPresenter;
 
 /**
  * Created by rajaSaboor on 9/7/2017.
  */
 
-public class SearchFragment extends Fragment implements SearchPresenter.OnDiscoveryComplete, SearchContract.FragmentView {
+public class SearchFragment extends Fragment implements SearchContract.FragmentView {
     private static final String TAG = SearchFragment.class.getSimpleName();
     private SearchContract.Presenter presenter = null;
     private MainFragmentBinding mainFragmentBinding;
@@ -78,17 +72,6 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
             BluetoothAdapter.getDefaultAdapter().enable();
         }
 
-        /*
-        if ((presenter.isDeviceHaveBluetooth()) && (!presenter.isDeviceBluetoothIsTurnedOn())) {
-            openBluetoothPermissionIntent();
-        } else {
-            permissionsValidation();
-            registerReceiverAfterChecks();
-            //getTheViewInstanceOrNewOne().resetDeviceListAdapter();
-        }
-        */
-
-
         if (presenter.isDeviceHaveBluetooth()) {
             permissionsValidation();
             registerReceiverAfterChecks();
@@ -121,9 +104,11 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
     private void registerReceiverAfterChecks() {
         Log.d(TAG, "registerReceiverAfterChecks: start");
         if ((isDeviceHaveBluetoothAndPermissionGranted())) {
-            // show the fragment
-            presenter.showSearchFragment(getActivity().getSupportFragmentManager(), true);
-            showProgressFragment(true);
+            // show the progress fragment
+
+//            presenter.showSearchFragment(getActivity().getSupportFragmentManager(), true);
+            showSearchFragment(true);
+            showProgressFragment();
             presenter.registerBroadcast();
 
             Log.d(TAG, "registerReceiverAfterChecks: Broadcast register successfully");
@@ -157,6 +142,7 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
         return listFragment;
     }
 
+    /*
     @Override
     public void onDiscoveryComplete(BluetoothDevice bluetoothDevice) {
         Log.d(TAG, "onDiscoveryComplete: start");
@@ -177,6 +163,7 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
         presenter.showSearchFragment(getActivity().getSupportFragmentManager(), false);
         changeSearchingTextToNoDeviceFound();
     }
+    */
 
     public void changeSearchingTextToNoDeviceFound() {
         DevicesListFragment listFragment = getTheViewInstanceOrNewOne();
@@ -209,7 +196,7 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
     }
 
     @Override
-    public void showProgressFragment(boolean show) {
+    public void showProgressFragment() {
         SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
 
         if (searchProgressFragment == null) {
@@ -220,5 +207,28 @@ public class SearchFragment extends Fragment implements SearchPresenter.OnDiscov
                     .commit();
             Log.d(TAG, "onCreate: Setting up done");
         }
+    }
+
+    @Override
+    public void showSearchFragment(boolean show) {
+        SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
+        FragmentTransaction transaction = null;
+        if (searchProgressFragment != null) {
+            Log.d(TAG, "showSearchFragment: Search fragment is NOT null");
+            transaction = getActivity().getSupportFragmentManager().beginTransaction().setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+        } else {
+            Log.d(TAG, "showSearchFragment: Search fragment is NULL");
+        }
+
+        if (transaction != null) {
+            if (show) {
+                Log.d(TAG, "showSearchFragment: Showing the fragment");
+                transaction.show(searchProgressFragment).commit();
+            } else {
+                Log.d(TAG, "showSearchFragment: Hide the fragment");
+                transaction.hide(searchProgressFragment).commit();
+            }
+        }
+        Log.d(TAG, "showSearchFragment: end");
     }
 }
