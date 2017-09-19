@@ -1,6 +1,7 @@
 package com.example.rajasaboor.bluetoothprototype.discoverdeviceslist;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -47,6 +48,29 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
         listFragmentBinding = DataBindingUtil.inflate(inflater, R.layout.bluetooth_list_fragment, container, false);
         initAdapter();
         return listFragmentBinding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(TAG, "onResume: start");
+        super.onResume();
+        if (presenter.getBluetoothPairReceiver() == null) {
+            presenter.pairingProcessBroadcast();
+        }
+
+        IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        getActivity().registerReceiver(presenter.getBluetoothPairReceiver(), intent);
+        Log.d(TAG, "onResume: end");
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy: starrt");
+        super.onDestroy();
+        if (presenter.getBluetoothPairReceiver() != null) {
+            getActivity().unregisterReceiver(presenter.getBluetoothPairReceiver());
+        }
+        Log.d(TAG, "onDestroy: end");
     }
 
     @Override

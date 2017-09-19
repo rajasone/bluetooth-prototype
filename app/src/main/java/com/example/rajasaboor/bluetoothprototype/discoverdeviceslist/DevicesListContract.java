@@ -25,7 +25,7 @@ public interface DevicesListContract {
     interface Presenter {
         List<BluetoothDevice> getDeviceList();
 
-        BroadcastReceiver getBluetoothReceiver();
+        BroadcastReceiver getBluetoothPairReceiver();
 
         boolean isNewDeviceFound();
 

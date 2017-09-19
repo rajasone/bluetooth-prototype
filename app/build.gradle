@@ -21,6 +21,8 @@ android {
         buildConfigField "int", "SEARCH_FRAGMENT", "1"
         buildConfigField "int", "SEARCH_PROGRESS_FRAGMENT", "2"
         buildConfigField "int", "DEVICE_LIST_FRAGMENT", "3"
+        buildConfigField "String", "APP_NAME", '"bluetooth-chat"'
+        buildConfigField "String", "UUID", '"1a03ae0e-fef1-447e-afd1-fd692ae6551b"'
     }
 
     dataBinding {

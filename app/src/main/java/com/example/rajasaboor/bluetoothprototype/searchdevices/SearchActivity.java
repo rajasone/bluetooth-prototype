@@ -216,6 +216,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
             presenter.defineBluetoothEnableBroadcast();
             Log.d(TAG, "onCreate: Registering the enable or disable broadcast successfully");
         }
+
         IntentFilter enableFilter = new IntentFilter();
         enableFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(presenter.getBluetoothEnableReceiver(), enableFilter);
