@@ -1,6 +1,7 @@
 package com.example.rajasaboor.bluetoothprototype.connectionmanager;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
@@ -18,10 +19,8 @@ public class ServerConnection extends Thread {
     private static final String TAG = ServerConnection.class.getSimpleName();
     private final BluetoothServerSocket bluetoothServerSocket;
 
-
     public ServerConnection() {
         BluetoothServerSocket temp = null;
-
         try {
             temp = BluetoothAdapter.getDefaultAdapter().listenUsingRfcommWithServiceRecord(BuildConfig.APP_NAME, UUID.fromString(BuildConfig.UUID));
             Log.d(TAG, "ServerConnection: Connection start using the UUID ===> " + BuildConfig.UUID);
@@ -66,6 +65,7 @@ public class ServerConnection extends Thread {
         }
         */
 
+
         if (bluetoothServerSocket == null) {
             Log.e(TAG, "run: Bluetooth server socket is NULL");
         } else {
@@ -73,15 +73,19 @@ public class ServerConnection extends Thread {
         }
 
         try {
+            Log.d(TAG, "run: REFCOMM server socket start");
             socket = bluetoothServerSocket.accept();
             Log.d(TAG, "run: Server socket accepted the connection");
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.e(TAG, "run: Exception occoured while accepting the connection", e.getCause());
             e.printStackTrace();
         }
 
         if (socket != null) {
             Log.d(TAG, "run: Socket is good now start the communication");
+           ConnectedHandler handler = new ConnectedHandler(socket);
+            handler.start();
+            handler.write("hello i have a new message".getBytes());
         } else {
             Log.e(TAG, "run: Socket is NULL");
         }

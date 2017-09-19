@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.AdapterView;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
+import com.example.rajasaboor.bluetoothprototype.connectionmanager.ClientConnection;
 import com.example.rajasaboor.bluetoothprototype.connectionmanager.ServerConnection;
 
 import java.io.DataOutputStream;
@@ -118,8 +119,9 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
         if (!BluetoothAdapter.getDefaultAdapter().getBondedDevices().contains(deviceList.get(position))) {
             Log.d(TAG, "handleListClick: Device is not pared send the paired request");
             pairDevice(deviceList.get(position));
-        }else{
-            new ServerConnection().start();
+        } else {
+//            new ServerConnection().start();
+            new ClientConnection(deviceList.get(position)).start();
         }
 
 

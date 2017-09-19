@@ -55,6 +55,12 @@ public class ClientConnection extends Thread {
             return;
         }
         //mange the work associated to the socket
+
+        if (bluetoothSocket != null) {
+            Log.d(TAG, "run: start your work");
+        } else {
+            Log.d(TAG, "run: something is wrong");
+        }
         Log.d(TAG, "run: end");
     }
 
@@ -65,5 +71,22 @@ public class ClientConnection extends Thread {
         } catch (IOException e) {
             Log.e(TAG, "close: Not able to close the socket ===> ", e.getCause());
         }
+    }
+
+    /*
+    * This method initiate the Accept thread
+     */
+
+    public void startAcceptThread() {
+        close();
+        new ServerConnection().start();
+    }
+
+    /*
+    * This method initiate the connect thread
+     */
+
+    public void startConnectThread() {
+        start();
     }
 }
