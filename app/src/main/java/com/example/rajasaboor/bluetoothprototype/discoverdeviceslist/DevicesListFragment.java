@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,7 +18,6 @@ import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
-import com.example.rajasaboor.bluetoothprototype.connectionmanager.ServerConnection;
 import com.example.rajasaboor.bluetoothprototype.databinding.BluetoothListFragmentBinding;
 
 import java.util.ArrayList;
@@ -31,6 +31,8 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
     private ArrayAdapter<String> deviceNameAdapter = null;
     private DevicesListContract.Presenter presenter = null;
     private BluetoothListFragmentBinding listFragmentBinding = null;
+    private int connectionStatus;
+
 
     public static DevicesListFragment newInstance() {
         return new DevicesListFragment();
@@ -62,8 +64,16 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
         IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         getActivity().registerReceiver(presenter.getBluetoothPairReceiver(), intent);
 
-        new ServerConnection().start();
+      presenter.getConnectionManager().start();
         Log.d(TAG, "onResume: end");
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause: start");
+        super.onPause();
+        presenter.setConnectionStatus(BuildConfig.STATE_DISCONNECTED);
+        Log.d(TAG, "onPause: end");
     }
 
     @Override

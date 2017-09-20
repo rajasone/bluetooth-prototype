@@ -23,6 +23,12 @@ android {
         buildConfigField "int", "DEVICE_LIST_FRAGMENT", "3"
         buildConfigField "String", "APP_NAME", '"bluetooth-chat"'
         buildConfigField "String", "UUID", '"1a03ae0e-fef1-447e-afd1-fd692ae6551b"'
+        buildConfigField "String", "CONNECTION_STATUS_KEY", '"msg"'
+        buildConfigField "int", "STATE_NONE", "-1"
+        buildConfigField "int", "STATE_DISCONNECTED", "0"
+        buildConfigField "int", "STATE_CONNECTING", "1"
+        buildConfigField "int", "STATE_CONNECTED", "2"
+        buildConfigField "int", "STATE_LISTENING", "3"
     }
 
     dataBinding {

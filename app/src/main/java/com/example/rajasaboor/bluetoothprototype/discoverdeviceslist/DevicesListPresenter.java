@@ -6,14 +6,15 @@ import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Message;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
-import com.example.rajasaboor.bluetoothprototype.connectionmanager.ClientConnection;
-import com.example.rajasaboor.bluetoothprototype.connectionmanager.ServerConnection;
+import com.example.rajasaboor.bluetoothprototype.connectionmanager.ConnectionManager;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -33,9 +34,16 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
     private boolean isNewDeviceFound = false;
     private BroadcastReceiver bluetoothPairReceiver = null;
     private final DevicesListContract.FragmentView fragmentView;
+    private Handler handler;
+    private int connectionStatus;
+    private ConnectionManager connectionManager;
 
     public DevicesListPresenter(DevicesListContract.FragmentView fragmentView) {
         this.fragmentView = fragmentView;
+        handlerDefine();
+
+        this.connectionStatus = BuildConfig.STATE_LISTENING;
+        connectionManager = new ConnectionManager(handler);
     }
 
     @Override
@@ -74,6 +82,26 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
     }
 
     @Override
+    public Handler getHandler() {
+        return handler;
+    }
+
+    @Override
+    public void setConnectionStatus(int connectionStatus) {
+        this.connectionStatus = connectionStatus;
+    }
+
+    @Override
+    public int getConnectionStatus() {
+        return this.connectionStatus;
+    }
+
+    @Override
+    public ConnectionManager getConnectionManager() {
+        return this.connectionManager;
+    }
+
+    @Override
     public boolean isNewDeviceFound() {
         return isNewDeviceFound;
     }
@@ -88,6 +116,25 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
         for (BluetoothDevice device : deviceList) {
             deviceNameList.add(device.getName());
         }
+    }
+
+    public void handlerDefine() {
+        Log.d(TAG, "handlerDefine: start");
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+
+                Log.d(TAG, "handleMessage: Message received ===> " + msg.arg1);
+                switch (msg.arg1) {
+                    case 1:
+                        fragmentView.showToast(msg.getData().getString(BuildConfig.CONNECTION_STATUS_KEY));
+                        setConnectionStatus(BuildConfig.STATE_CONNECTED);
+                        break;
+                }
+            }
+        };
+        Log.d(TAG, "handlerDefine: end");
     }
 
     @Override
@@ -120,8 +167,14 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
             Log.d(TAG, "handleListClick: Device is not pared send the paired request");
             pairDevice(deviceList.get(position));
         } else {
-//            new ServerConnection().start();
-            new ClientConnection(deviceList.get(position)).start();
+//            if (connectionStatus == BuildConfig.STATE_CONNECTED) {
+//                connectionStatus = BuildConfig.STATE_DISCONNECTED;
+//                connectionManager.setClientConnectionInstance(deviceList.get(position));
+//            }
+//            clientConnection = new ClientConnection(deviceList.get(position), handler);
+//            clientConnection.start();
+            connectionManager.setClientConnectionInstance(deviceList.get(position));
+            connectionManager.getClientConnection().start();
         }
 
 
@@ -376,7 +429,7 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
 
                     if (currentState == BluetoothDevice.BOND_BONDED && previousState == BluetoothDevice.BOND_BONDING) {
                         Log.d(TAG, "onReceive: Device PAIRED");
-                        new ServerConnection().start();
+                        connectionManager.getClientConnection().start();
                         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                         Log.d(TAG, "onReceive: Device name ===> " + device.getName());
                         Log.d(TAG, "onReceive: Device address ===> " + device.getAddress());
