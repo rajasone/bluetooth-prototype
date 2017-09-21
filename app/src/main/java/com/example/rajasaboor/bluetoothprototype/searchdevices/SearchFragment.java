@@ -2,15 +2,18 @@ package com.example.rajasaboor.bluetoothprototype.searchdevices;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,8 +21,11 @@ import android.view.ViewGroup;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
-import com.example.rajasaboor.bluetoothprototype.SearchProgressFragment;
+import com.example.rajasaboor.bluetoothprototype.adapter.PairedDevicesAdapter;
 import com.example.rajasaboor.bluetoothprototype.databinding.MainFragmentBinding;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by rajaSaboor on 9/7/2017.
@@ -49,6 +55,13 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         Log.d(TAG, "onCreate: end");
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated: start");
+        super.onActivityCreated(savedInstanceState);
+        Log.d(TAG, "onActivityCreated: end");
+    }
+
     public void invokePermissions() {
         if (!(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION))) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, BuildConfig.ACCESS_COARSE_LOCATION);
@@ -60,7 +73,29 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mainFragmentBinding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false);
         mainFragmentBinding.setHandler(this);
+        setUpDiscoverDevicesRecyclerView();
+        setUpPairedDevicesRecyclerView();
+
+        // TODO: 9/21/2017 set the presenter lists and again set to the adapter
+
         return mainFragmentBinding.getRoot();
+    }
+
+
+    void setUpDiscoverDevicesRecyclerView() {
+        PairedDevicesAdapter adapter = new PairedDevicesAdapter(new ArrayList<BluetoothDevice>(), false);
+        mainFragmentBinding.availableDevicesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mainFragmentBinding.availableDevicesRecyclerView.setAdapter(adapter);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), new LinearLayoutManager(getContext()).getOrientation());
+        mainFragmentBinding.availableDevicesRecyclerView.addItemDecoration(dividerItemDecoration);
+    }
+
+    void setUpPairedDevicesRecyclerView() {
+        PairedDevicesAdapter adapter = new PairedDevicesAdapter(new ArrayList<>(BluetoothAdapter.getDefaultAdapter().getBondedDevices()), true);
+        mainFragmentBinding.pairedDevicesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mainFragmentBinding.pairedDevicesRecyclerView.setAdapter(adapter);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), new LinearLayoutManager(getContext()).getOrientation());
+        mainFragmentBinding.pairedDevicesRecyclerView.addItemDecoration(dividerItemDecoration);
     }
 
     public void onClick() {
@@ -79,9 +114,29 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         Log.d(TAG, "onClick: end");
     }
 
+    @Override
+    public void showAvailableDeviceInRecyclerView(List<BluetoothDevice> deviceList, boolean isDiscoverAdapter) {
+        if (isDiscoverAdapter) {
+            Log.d(TAG, "showAvailableDeviceInRecyclerView: Updating the available devices adapter");
+            ((PairedDevicesAdapter) mainFragmentBinding.availableDevicesRecyclerView.getAdapter()).updateList(deviceList);
+        } else {
+            ((PairedDevicesAdapter) mainFragmentBinding.pairedDevicesRecyclerView.getAdapter()).updateList(deviceList);
+            Log.d(TAG, "showAvailableDeviceInRecyclerView: Updating the PAIRED devices adapter");
+        }
+    }
+
     public void openBluetoothPermissionIntent() {
         Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         startActivityForResult(bluetoothIntent, BuildConfig.BLUETOOTH_REQUEST_CODE);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState: start");
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList("pairedDevices", (ArrayList<? extends Parcelable>) presenter.getPairedDevices());
+        outState.putParcelableArrayList("discoverDevices", (ArrayList<? extends Parcelable>) presenter.getPairedDevices());
+        Log.d(TAG, "onSaveInstanceState: end");
     }
 
     public void permissionsValidation() {

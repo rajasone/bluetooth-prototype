@@ -20,9 +20,11 @@ import java.util.List;
 public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdapter.ViewHolder> {
     private static final String TAG = PairedDevicesAdapter.class.getSimpleName();
     private List<BluetoothDevice> deviceList = new ArrayList<>();
+    private boolean isPairedAdapter;
 
-    public PairedDevicesAdapter(List<BluetoothDevice> deviceList) {
+    public PairedDevicesAdapter(List<BluetoothDevice> deviceList, boolean isPairedAdapter) {
         this.deviceList = deviceList;
+        this.isPairedAdapter = isPairedAdapter;
     }
 
     @Override
@@ -51,10 +53,14 @@ public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdap
 
         void setItem(BluetoothDevice item) {
             binding.setDeviceName(item.getName());
+
+            if (!isPairedAdapter) {
+                binding.deviceSettingImageView.setVisibility(View.GONE);
+            }
         }
     }
 
-    void updateList(List<BluetoothDevice> deviceList) {
+    public void updateList(List<BluetoothDevice> deviceList) {
         this.deviceList = deviceList;
         notifyDataSetChanged();
     }

@@ -11,10 +11,12 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
-import android.widget.Switch;
+import android.widget.CompoundButton;
 
-import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListContract;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -30,6 +32,8 @@ public class SearchPresenter implements SearchContract.Presenter {
     private final SearchContract.FragmentView fragmentView;
     private final SearchContract.ActivityView activityView;
     private final DevicesListContract.Presenter listPresenter;
+
+    private List<BluetoothDevice> discoveryDevicesList = new ArrayList<>();
 
     SearchPresenter(SearchContract.ActivityView activityView, SearchContract.FragmentView fragmentView, DevicesListContract.Presenter listPresenter) {
         this.activityView = activityView;
@@ -65,8 +69,10 @@ public class SearchPresenter implements SearchContract.Presenter {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                     if ((device.getName() != null)) {
-                        listPresenter.addBluetoothDeviceInList(device);
-                        listPresenter.refreshListAdapter();
+                        discoveryDevicesList.add(device);
+                        fragmentView.showAvailableDeviceInRecyclerView(discoveryDevicesList, true);
+                        //  listPresenter.addBluetoothDeviceInList(device);
+//                        listPresenter.refreshListAdapter();
                     } else {
                         Log.e(TAG, "onReceive: Device is not full filling the condition ===> " + device.getName());
                     }
@@ -74,8 +80,8 @@ public class SearchPresenter implements SearchContract.Presenter {
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
                     Log.d(TAG, "onReceive: Discovery End");
                     fragmentView.enableSearchButton(true);
-                    setDeviceDiscoveryInProgress(false);
-                    listPresenter.onDeviceDiscoveryComplete();
+//                    setDeviceDiscoveryInProgress(false);
+                    //listPresenter.onDeviceDiscoveryComplete();
 //                    fragmentView.showSearchProgressFragment(false);
                 }
                 Log.d(TAG, "onReceive: end");
@@ -102,6 +108,7 @@ public class SearchPresenter implements SearchContract.Presenter {
                             break;
                         case BluetoothAdapter.STATE_ON:
                             Log.d(TAG, "onReceive: ON");
+                            fragmentView.showAvailableDeviceInRecyclerView(getPairedDevices(), false);
                             registerBroadcast();
                             break;
                     }
@@ -170,15 +177,40 @@ public class SearchPresenter implements SearchContract.Presenter {
     }
 
     @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.bluetooth_on_off:
-                if (((Switch) view).isChecked()) {
-                    fragmentView.showViews(true);
-                } else {
-                    fragmentView.showViews(false);
-                }
-                break;
+    public void turnOnBluetooth(boolean turnOn) {
+        if (turnOn) {
+            BluetoothAdapter.getDefaultAdapter().enable();
+        } else {
+            BluetoothAdapter.getDefaultAdapter().disable();
         }
+    }
+
+    @Override
+    public List<BluetoothDevice> getPairedDevices() {
+        return new ArrayList<>(BluetoothAdapter.getDefaultAdapter().getBondedDevices());
+    }
+
+    @Override
+    public List<BluetoothDevice> discoveryDevicesList() {
+        return discoveryDevicesList;
+    }
+
+    @Override
+    public void onClick(View view) {
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+        Log.d(TAG, "onCheckedChanged: start");
+
+        if (isChecked) {
+            fragmentView.showViews(true);
+            turnOnBluetooth(true);
+        } else {
+            fragmentView.showViews(false);
+            turnOnBluetooth(false);
+        }
+
+        Log.d(TAG, "onCheckedChanged: end");
     }
 }

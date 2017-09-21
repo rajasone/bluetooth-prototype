@@ -28,26 +28,28 @@ import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesList
 public class SearchActivity extends AppCompatActivity implements SearchContract.ActivityView {
     private static final String TAG = SearchActivity.class.getSimpleName();
     private SearchContract.Presenter presenter;
+    private SearchFragment searchFragment;
+    private ActivityMainBinding mainBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityMainBinding mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        SearchFragment searchFragment = (SearchFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
+
+        searchFragment = (SearchFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
         if (searchFragment == null) {
             searchFragment = SearchFragment.newInstance();
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.main_fragment_container, searchFragment)
                     .commit();
         }
+
         presenter = new SearchPresenter(this, searchFragment, null);
         searchFragment.setPresenter(presenter);
-        mainBinding.includeToolbar.bluetoothOnOff.setOnClickListener(presenter);
-
-
+        mainBinding.includeToolbar.bluetoothOnOff.setOnCheckedChangeListener(presenter);
 
 
         /*
@@ -64,6 +66,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
 
         // setting up the Discovered list devices fragment
         addFragment(BuildConfig.SEARCH_PROGRESS_FRAGMENT);
+
 
         */
         if (savedInstanceState != null)
@@ -134,6 +137,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     }
     */
 
+
     private void addFragmentInContainer(int containerID, Fragment fragmentToAdd, boolean hideFragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction()
                 .add(containerID, fragmentToAdd);
@@ -149,6 +153,17 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     @Override
     protected void onResume() {
         super.onResume();
+
+        Log.d(TAG, "onResume: Default adapter is enable ? ===>" + BluetoothAdapter.getDefaultAdapter().isEnabled());
+        if (mainBinding.includeToolbar.bluetoothOnOff.isChecked() || BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+            Log.d(TAG, "onResume: Inside the IF");
+            searchFragment.showViews(true);
+            mainBinding.includeToolbar.bluetoothOnOff.setChecked(true);
+        } else {
+            Log.d(TAG, "onResume: Inside the ELSE");
+            searchFragment.showViews(false);
+            mainBinding.includeToolbar.bluetoothOnOff.setChecked(false);
+        }
 
         registerBluetoothEnableReceiver();
         if (presenter.isDeviceDiscoveryInProgress()) {
