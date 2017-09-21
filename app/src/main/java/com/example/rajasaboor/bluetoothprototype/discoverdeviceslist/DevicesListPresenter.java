@@ -36,10 +36,13 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
     private final DevicesListContract.FragmentView fragmentView;
     private Handler handler;
     private ConnectionManager connectionManager;
+    private BluetoothSocket socket;
+
 
     public DevicesListPresenter(DevicesListContract.FragmentView fragmentView) {
         this.fragmentView = fragmentView;
         handlerDefine();
+
 
         connectionManager = new ConnectionManager();
         connectionManager.setHandler(handler);
@@ -118,7 +121,8 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
                 switch (msg.arg1) {
                     case 1:
                         fragmentView.showToast(msg.getData().getString(BuildConfig.CONNECTION_STATUS_KEY));
-                        connectionManager.setConnectedHandler();
+//                        connectionManager.setConnectedHandler();
+                        socket = connectionManager.getSocket();
                         fragmentView.startChatActivity();
                         break;
                 }

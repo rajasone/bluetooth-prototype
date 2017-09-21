@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.rajasaboor.bluetoothprototype.R;
+import com.example.rajasaboor.bluetoothprototype.connectionmanager.ConnectionManager;
 import com.example.rajasaboor.bluetoothprototype.databinding.ChatFragmentBinding;
 
 /**
@@ -36,6 +37,14 @@ public class ChatFragment extends Fragment {
         return chatFragmentBinding.getRoot();
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG, "onActivityCreated: start");
+        super.onActivityCreated(savedInstanceState);
+        chatPresenter.setConnectionManager();
+//          chatPresenter.startCommunication();
+        Log.d(TAG, "onActivityCreated: end");
+    }
 
     public ChatContract.Presenter getChatPresenter() {
         return chatPresenter;

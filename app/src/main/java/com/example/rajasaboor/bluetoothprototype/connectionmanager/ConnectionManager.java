@@ -113,6 +113,11 @@ public class ConnectionManager {
                 if (socket != null) {
                     Log.d(TAG, "run: Socket id NOT NULL !! start the connection");
                     // manage the work
+
+                  connectedHandler = new ConnectedHandler(socket);
+                    connectedHandler.start();
+                    connectedHandler.write("hello".getBytes());
+
                     Message message = new Message();
                     message.arg1 = 1;
                     Bundle bundle = new Bundle();
@@ -187,6 +192,7 @@ public class ConnectionManager {
             if (socket != null) {
                 Log.d(TAG, "run: start your work");
 //                Log.d(TAG, "run: Connected with ===> " + bluetoothDevice.getName());
+
                 Log.d(TAG, "run: Connected with ===> " + device.getName());
                 Message message = new Message();
                 message.arg1 = 1;
@@ -225,7 +231,7 @@ public class ConnectionManager {
             Log.d(TAG, "ConnectedThread: Starting.");
 
 //            mmSocket = socket;
-            socket = socket;
+            ConnectionManager.this.socket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
@@ -242,6 +248,7 @@ public class ConnectionManager {
         }
 
         public void run() {
+            Log.d(TAG, "run: start");
             byte[] buffer = new byte[1024];  // buffer store for the stream
 
             int bytes; // bytes returned from read()
@@ -258,6 +265,7 @@ public class ConnectionManager {
                     break;
                 }
             }
+            Log.d(TAG, "run: end");
         }
 
         //Call this from the main activity to send data to the remote device
@@ -284,5 +292,9 @@ public class ConnectionManager {
             start();
 
         }
+    }
+
+    public BluetoothSocket getSocket() {
+        return socket;
     }
 }

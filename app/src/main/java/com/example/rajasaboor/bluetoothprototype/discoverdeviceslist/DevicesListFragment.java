@@ -2,6 +2,7 @@ package com.example.rajasaboor.bluetoothprototype.discoverdeviceslist;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
@@ -155,6 +156,6 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
 
     @Override
     public void startChatActivity() {
-           startActivity(new Intent(getContext(), ChatActivity.class));
+        startActivity(new Intent(getContext(), ChatActivity.class));
     }
 }

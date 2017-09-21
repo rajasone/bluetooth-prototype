@@ -22,10 +22,16 @@ public class ChatPresenter implements ChatContract.Presenter {
     @Override
     public void setConnectionManager() {
         manager = new ConnectionManager();
+        manager.start();
     }
 
     @Override
     public ConnectionManager getConnectionManager() {
         return manager;
+    }
+
+    @Override
+    public void startCommunication() {
+        //manager.setConnectedHandler();
     }
 }

@@ -17,5 +17,7 @@ public interface ChatContract {
         void setConnectionManager();
 
         ConnectionManager getConnectionManager();
+
+        void startCommunication();
     }
 }
