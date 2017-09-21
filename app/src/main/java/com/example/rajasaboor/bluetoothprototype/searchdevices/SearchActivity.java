@@ -36,15 +36,21 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        SearchFragment searchFragment = (SearchFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
+        if (searchFragment == null) {
+            searchFragment = SearchFragment.newInstance();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.main_fragment_container, searchFragment)
+                    .commit();
+        }
+        presenter = new SearchPresenter(this, searchFragment, null);
+        searchFragment.setPresenter(presenter);
+        mainBinding.includeToolbar.bluetoothOnOff.setOnClickListener(presenter);
 
+
+
+
+        /*
         // setting up the Discovered list devices fragment
         DevicesListFragment listFragment = (DevicesListFragment) addFragment(BuildConfig.DEVICE_LIST_FRAGMENT);
         DevicesListContract.Presenter devicePresenter = new DevicesListPresenter(listFragment);
@@ -59,15 +65,18 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         // setting up the Discovered list devices fragment
         addFragment(BuildConfig.SEARCH_PROGRESS_FRAGMENT);
 
+        */
         if (savedInstanceState != null)
             Log.d(TAG, "onCreate: Search in progress ===> " + savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS));
 
         if ((savedInstanceState != null) && (savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS))) {
-            mainFragment.showSearchProgressFragment(true);
+//            mainFragment.showSearchProgressFragment(true);
             presenter.setDeviceDiscoveryInProgress(true);
         }
     }
 
+
+    /*
     private Fragment addFragment(int fragmentIdentifier) {
         Fragment temp = null;
 
@@ -85,6 +94,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
 
         return temp;
     }
+    */
 
 
     /*
@@ -92,6 +102,8 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     * If fragment is NULL a new instance of fragment is created and add the fragment in the container
     * If fragment is already in container just return the instance of the fragment
      */
+
+    /*
     private Fragment getFragmentInstance(int requireFragment) {
         switch (requireFragment) {
             case BuildConfig.SEARCH_FRAGMENT:
@@ -120,6 +132,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
                 throw new IllegalArgumentException("Invalid require fragment ===> " + requireFragment);
         }
     }
+    */
 
     private void addFragmentInContainer(int containerID, Fragment fragmentToAdd, boolean hideFragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction()
@@ -136,6 +149,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     @Override
     protected void onResume() {
         super.onResume();
+
         registerBluetoothEnableReceiver();
         if (presenter.isDeviceDiscoveryInProgress()) {
             presenter.registerBroadcast();

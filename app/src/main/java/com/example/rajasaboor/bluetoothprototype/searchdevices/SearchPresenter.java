@@ -10,7 +10,10 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
+import android.widget.Switch;
 
+import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListContract;
 
 
@@ -73,7 +76,7 @@ public class SearchPresenter implements SearchContract.Presenter {
                     fragmentView.enableSearchButton(true);
                     setDeviceDiscoveryInProgress(false);
                     listPresenter.onDeviceDiscoveryComplete();
-                    fragmentView.showSearchProgressFragment(false);
+//                    fragmentView.showSearchProgressFragment(false);
                 }
                 Log.d(TAG, "onReceive: end");
             }
@@ -164,5 +167,18 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void setBluetoothEnableReceiver(BroadcastReceiver bluetoothEnableReceiver) {
         this.bluetoothEnableReceiver = bluetoothEnableReceiver;
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.bluetooth_on_off:
+                if (((Switch) view).isChecked()) {
+                    fragmentView.showViews(true);
+                } else {
+                    fragmentView.showViews(false);
+                }
+                break;
+        }
     }
 }

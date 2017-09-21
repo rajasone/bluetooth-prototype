@@ -104,7 +104,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         Log.d(TAG, "registerReceiverAfterChecks: start");
         if ((isDeviceHaveBluetoothAndPermissionGranted())) {
 
-            showSearchProgressFragment(true);
+//            showSearchProgressFragment(true);
             presenter.registerBroadcast();
 
             Log.d(TAG, "registerReceiverAfterChecks: Broadcast register successfully");
@@ -141,6 +141,29 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     }
 
     @Override
+    public void showViews(boolean bluetoothOnViews) {
+        if (bluetoothOnViews) {
+            mainFragmentBinding.pairedDevicesTextView.setVisibility(View.VISIBLE);
+            mainFragmentBinding.pairedDevicesRecyclerView.setVisibility(View.VISIBLE);
+            mainFragmentBinding.availableDevicesTextView.setVisibility(View.VISIBLE);
+            mainFragmentBinding.availableDevicesRecyclerView.setVisibility(View.VISIBLE);
+            mainFragmentBinding.bluetoothTurendOffTextView.setVisibility(View.INVISIBLE);
+            mainFragmentBinding.searchBluetoothButton.setEnabled(true);
+
+        } else {
+            mainFragmentBinding.pairedDevicesTextView.setVisibility(View.INVISIBLE);
+            mainFragmentBinding.pairedDevicesRecyclerView.setVisibility(View.INVISIBLE);
+            mainFragmentBinding.availableDevicesTextView.setVisibility(View.INVISIBLE);
+            mainFragmentBinding.availableDevicesRecyclerView.setVisibility(View.INVISIBLE);
+            mainFragmentBinding.bluetoothTurendOffTextView.setVisibility(View.VISIBLE);
+            mainFragmentBinding.searchBluetoothButton.setEnabled(false);
+
+
+        }
+    }
+
+    /*
+    @Override
     public void showSearchProgressFragment(boolean show) {
         SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
         FragmentTransaction transaction = null;
@@ -162,4 +185,5 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         }
         Log.d(TAG, "showSearchProgressFragment: end");
     }
+    */
 }
