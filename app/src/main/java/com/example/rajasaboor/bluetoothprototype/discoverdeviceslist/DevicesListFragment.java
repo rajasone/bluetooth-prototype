@@ -1,10 +1,11 @@
 package com.example.rajasaboor.bluetoothprototype.discoverdeviceslist;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
+import com.example.rajasaboor.bluetoothprototype.chat.ChatActivity;
 import com.example.rajasaboor.bluetoothprototype.databinding.BluetoothListFragmentBinding;
 
 import java.util.ArrayList;
@@ -64,7 +66,9 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
         IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         getActivity().registerReceiver(presenter.getBluetoothPairReceiver(), intent);
 
-      presenter.getConnectionManager().start();
+        if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+            presenter.getConnectionManager().start();
+        }
         Log.d(TAG, "onResume: end");
     }
 
@@ -72,7 +76,6 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
     public void onPause() {
         Log.d(TAG, "onPause: start");
         super.onPause();
-        presenter.setConnectionStatus(BuildConfig.STATE_DISCONNECTED);
         Log.d(TAG, "onPause: end");
     }
 
@@ -147,6 +150,11 @@ public class DevicesListFragment extends Fragment implements DevicesListContract
 
     @Override
     public void showToast(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void startChatActivity() {
+           startActivity(new Intent(getContext(), ChatActivity.class));
     }
 }

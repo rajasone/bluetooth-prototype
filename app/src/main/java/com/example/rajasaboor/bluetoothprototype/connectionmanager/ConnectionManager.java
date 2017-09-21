@@ -26,9 +26,12 @@ public class ConnectionManager {
     private ConnectionManager.ServerConnection serverConnection;
     private ConnectionManager.ClientConnection clientConnection;
     private ConnectionManager.ConnectedHandler connectedHandler;
+    private BluetoothSocket socket;
+    private BluetoothServerSocket serverSocket;
     private Handler handler;
+    private BluetoothDevice device;
 
-    public ConnectionManager(Handler handler) {
+    public void setHandler(Handler handler) {
         this.handler = handler;
     }
 
@@ -65,13 +68,19 @@ public class ConnectionManager {
         return connectedHandler;
     }
 
+    public void setConnectedHandler() {
+        connectedHandler = new ConnectedHandler(socket);
+
+        // TODO: 9/20/2017 asdasdasd
+    }
+
     public Handler getHandler() {
         return handler;
     }
 
     public class ServerConnection extends Thread {
         private final String TAG = ServerConnection.class.getSimpleName();
-        private final BluetoothServerSocket bluetoothServerSocket;
+//        private final BluetoothServerSocket bluetoothServerSocket;
 
         public ServerConnection() {
             BluetoothServerSocket temp = null;
@@ -81,18 +90,20 @@ public class ConnectionManager {
             } catch (IOException e) {
                 Log.e(TAG, "ServerConnection: Socket listen method failed ===> ", e.getCause());
             }
-            bluetoothServerSocket = temp;
+//            bluetoothServerSocket = temp;
+            serverSocket = temp;
         }
 
         @Override
         public void run() {
             Log.d(TAG, "run: start");
-            BluetoothSocket socket = null;
+//            BluetoothSocket socket = null;
 
             while (true) {
                 Log.d(TAG, "run: Inside the loop");
                 try {
-                    socket = bluetoothServerSocket.accept();
+//                    socket = bluetoothServerSocket.accept();
+                    socket = serverSocket.accept();
                 } catch (IOException e) {
                     Log.e(TAG, "run: Server accept failed ===> ", e.getCause());
                     e.printStackTrace();
@@ -118,7 +129,8 @@ public class ConnectionManager {
 
         public void close() {
             try {
-                bluetoothServerSocket.close();
+//                bluetoothServerSocket.close();
+                serverSocket.close();
             } catch (IOException e) {
                 Log.e(TAG, "close: Not able to close the socket ===> ", e.getCause());
             }
@@ -127,15 +139,16 @@ public class ConnectionManager {
 
     public class ClientConnection extends Thread {
         public final String TAG = ClientConnection.class.getSimpleName();
-        private final BluetoothSocket bluetoothSocket;
-        private final BluetoothDevice bluetoothDevice;
+//        private final BluetoothSocket bluetoothSocket;
+//        private final BluetoothDevice bluetoothDevice;
 
 
         public ClientConnection(BluetoothDevice device) {
             Log.d(TAG, "ClientConnection: start");
             BluetoothSocket temp = null;
 
-            bluetoothDevice = device;
+//            bluetoothDevice = device;
+            ConnectionManager.this.device = device;
 
             try {
                 temp = device.createRfcommSocketToServiceRecord(UUID.fromString(BuildConfig.UUID));
@@ -143,7 +156,8 @@ public class ConnectionManager {
                 Log.e(TAG, "ClientConnection: Failed to create socket ===> ", e.getCause());
             }
 
-            bluetoothSocket = temp;
+//            bluetoothSocket = temp;
+            socket = temp;
             Log.d(TAG, "ClientConnection: end");
         }
 
@@ -153,13 +167,15 @@ public class ConnectionManager {
             BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
 
             try {
-                bluetoothSocket.connect();
+//                bluetoothSocket.connect();
+                socket.connect();
             } catch (IOException e) {
                 Log.e(TAG, "run: Unable to connect ===> ", e.getCause());
                 e.printStackTrace();
 
                 try {
-                    bluetoothSocket.close();
+//                    bluetoothSocket.close();
+                    socket.close();
                 } catch (IOException e1) {
                     Log.e(TAG, "run: Not able to close the socket ===> ", e1.getCause());
                 }
@@ -167,13 +183,16 @@ public class ConnectionManager {
             }
             //mange the work associated to the socket
 
-            if (bluetoothSocket != null) {
+//            if (bluetoothSocket != null) {
+            if (socket != null) {
                 Log.d(TAG, "run: start your work");
-                Log.d(TAG, "run: Connected with ===> " + bluetoothDevice.getName());
+//                Log.d(TAG, "run: Connected with ===> " + bluetoothDevice.getName());
+                Log.d(TAG, "run: Connected with ===> " + device.getName());
                 Message message = new Message();
                 message.arg1 = 1;
                 Bundle bundle = new Bundle();
-                bundle.putString(BuildConfig.CONNECTION_STATUS_KEY, "Connected with " + bluetoothDevice.getName());
+//                bundle.putString(BuildConfig.CONNECTION_STATUS_KEY, "Connected with " + bluetoothDevice.getName());
+                bundle.putString(BuildConfig.CONNECTION_STATUS_KEY, "Connected with " + device.getName());
                 message.setData(bundle);
                 handler.sendMessage(message);
 
@@ -187,7 +206,8 @@ public class ConnectionManager {
 
         public void close() {
             try {
-                bluetoothSocket.close();
+//                bluetoothSocket.close();
+                socket.close();
             } catch (IOException e) {
                 Log.e(TAG, "close: Not able to close the socket ===> ", e.getCause());
             }
@@ -196,22 +216,23 @@ public class ConnectionManager {
 
 
     public class ConnectedHandler extends Thread {
-        private final String TAG = com.example.rajasaboor.bluetoothprototype.connectionmanager.ConnectedHandler.class.getSimpleName();
-        private final BluetoothSocket mmSocket;
+        private final String TAG = ConnectedHandler.class.getSimpleName();
+        //        private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
 
         public ConnectedHandler(BluetoothSocket socket) {
             Log.d(TAG, "ConnectedThread: Starting.");
 
-            mmSocket = socket;
+//            mmSocket = socket;
+            socket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
 
             try {
-                tmpIn = mmSocket.getInputStream();
-                tmpOut = mmSocket.getOutputStream();
+                tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -231,7 +252,7 @@ public class ConnectionManager {
                 try {
                     bytes = mmInStream.read(buffer);
                     String incomingMessage = new String(buffer, 0, bytes);
-                    Log.d(TAG, "InputStream: " + incomingMessage);
+                    Log.d(TAG, "InputStream: Message from " + socket.getRemoteDevice().getName().toUpperCase() + " ----> " + incomingMessage);
                 } catch (IOException e) {
                     Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage());
                     break;
@@ -253,7 +274,8 @@ public class ConnectionManager {
         /* Call this from the main activity to shutdown the connection */
         public void cancel() {
             try {
-                mmSocket.close();
+//                mmSocket.close();
+                socket.close();
             } catch (IOException e) {
             }
         }
@@ -262,7 +284,5 @@ public class ConnectionManager {
             start();
 
         }
-
     }
-
 }
