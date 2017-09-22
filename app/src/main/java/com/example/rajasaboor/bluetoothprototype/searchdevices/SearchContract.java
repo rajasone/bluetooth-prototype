@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.view.View;
 import android.widget.CompoundButton;
 
+import com.example.rajasaboor.bluetoothprototype.adapter.PairedDevicesAdapter;
 import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListContract;
 
 import java.util.List;
@@ -19,21 +20,38 @@ import java.util.List;
 
 public interface SearchContract {
     interface ActivityView {
-        void registerBluetoothBroadcast();
+        void registerBluetoothDiscoveryBroadcast();
+
+        void unregisterBluetoothDiscoveryBroadcast();
+
+        void registerBluetoothEnableBroadcast();
+
+        void unregisterBluetoothEnableBroadcast();
     }
 
     interface FragmentView {
         void enableSearchButton(boolean enable);
 
-//        void showSearchProgressFragment(boolean show);
-
         void showViews(boolean bluetoothOnViews);
 
         void showAvailableDeviceInRecyclerView(List<BluetoothDevice> deviceList, boolean isDiscoverAdapter);
 
+        void permissionsValidation(String permission);
+
+        boolean isDeviceHaveBluetoothAndPermissionGranted();
+
+        void showToast(String message);
+
+        void resetAdapter(boolean resetPairedAdapter);
+
+        void updateListSize(int listSize, boolean isPairedList);
+
+        void resetListSizeTextViews();
+
+        void showDiscoveryProgressBar(boolean show);
     }
 
-    interface Presenter extends View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+    interface Presenter extends View.OnClickListener, CompoundButton.OnCheckedChangeListener, PairedDevicesAdapter.OnRecyclerViewTapped {
 
         boolean isDeviceHaveBluetooth();
 
@@ -63,8 +81,6 @@ public interface SearchContract {
 
         void defineBluetoothEnableBroadcast();
 
-        DevicesListContract.Presenter getListPresenter();
-
         @Override
         void onClick(View view);
 
@@ -75,6 +91,10 @@ public interface SearchContract {
 
         List<BluetoothDevice> getPairedDevices();
 
-        List<BluetoothDevice> discoveryDevicesList();
+        List<BluetoothDevice> getDiscoveryDevicesList();
+
+        void setDiscoveryDevicesList(List<BluetoothDevice> discoveryDevicesList);
+
+        void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped);
     }
 }

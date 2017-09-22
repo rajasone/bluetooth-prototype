@@ -35,9 +35,13 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
+        setSupportActionBar(mainBinding.includeToolbar.bluetoothToolbar);
+        if (getSupportActionBar() != null) {
+            Log.d(TAG, "onCreate: Setting the title");
+            getSupportActionBar().setTitle("Bluetooth Prototype");
+        } else {
+            Log.e(TAG, "onCreate: Action bar is NULL");
+        }
 
         searchFragment = (SearchFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
         if (searchFragment == null) {
@@ -47,140 +51,48 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
                     .commit();
         }
 
-        presenter = new SearchPresenter(this, searchFragment, null);
+        presenter = new SearchPresenter(this, searchFragment);
         searchFragment.setPresenter(presenter);
         mainBinding.includeToolbar.bluetoothOnOff.setOnCheckedChangeListener(presenter);
 
-
-        /*
-        // setting up the Discovered list devices fragment
-        DevicesListFragment listFragment = (DevicesListFragment) addFragment(BuildConfig.DEVICE_LIST_FRAGMENT);
-        DevicesListContract.Presenter devicePresenter = new DevicesListPresenter(listFragment);
-        listFragment.setPresenter(devicePresenter);
-
-        // setting up the Main fragment
-        SearchFragment mainFragment = (SearchFragment) addFragment(BuildConfig.SEARCH_FRAGMENT);
-        presenter = new SearchPresenter(this, mainFragment, devicePresenter);
-        mainFragment.setPresenter(presenter);
-
-
-        // setting up the Discovered list devices fragment
-        addFragment(BuildConfig.SEARCH_PROGRESS_FRAGMENT);
-
-
-        */
         if (savedInstanceState != null)
             Log.d(TAG, "onCreate: Search in progress ===> " + savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS));
 
         if ((savedInstanceState != null) && (savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS))) {
-//            mainFragment.showSearchProgressFragment(true);
             presenter.setDeviceDiscoveryInProgress(true);
         }
     }
 
 
-    /*
-    private Fragment addFragment(int fragmentIdentifier) {
-        Fragment temp = null;
-
-        switch (fragmentIdentifier) {
-            case BuildConfig.SEARCH_FRAGMENT:
-                temp = getFragmentInstance(BuildConfig.SEARCH_FRAGMENT);
-                break;
-            case BuildConfig.SEARCH_PROGRESS_FRAGMENT:
-                temp = getFragmentInstance(BuildConfig.SEARCH_PROGRESS_FRAGMENT);
-                break;
-            case BuildConfig.DEVICE_LIST_FRAGMENT:
-                temp = getFragmentInstance(BuildConfig.DEVICE_LIST_FRAGMENT);
-                break;
-        }
-
-        return temp;
-    }
-    */
-
-
-    /*
-    * Util method which find the fragment
-    * If fragment is NULL a new instance of fragment is created and add the fragment in the container
-    * If fragment is already in container just return the instance of the fragment
-     */
-
-    /*
-    private Fragment getFragmentInstance(int requireFragment) {
-        switch (requireFragment) {
-            case BuildConfig.SEARCH_FRAGMENT:
-                SearchFragment searchFragment = (SearchFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
-                if (searchFragment == null) {
-                    searchFragment = SearchFragment.newInstance();
-                    addFragmentInContainer(R.id.main_fragment_container, searchFragment, false);
-                }
-
-                return searchFragment;
-            case BuildConfig.SEARCH_PROGRESS_FRAGMENT:
-                SearchProgressFragment searchProgressFragment = (SearchProgressFragment) getSupportFragmentManager().findFragmentById(R.id.search_fragment_container);
-                if (searchProgressFragment == null) {
-                    searchProgressFragment = SearchProgressFragment.newInstance();
-                    addFragmentInContainer(R.id.search_fragment_container, searchProgressFragment, true);
-                }
-                return searchProgressFragment;
-            case BuildConfig.DEVICE_LIST_FRAGMENT:
-                DevicesListFragment listFragment = (DevicesListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment_container);
-                if (listFragment == null) {
-                    listFragment = DevicesListFragment.newInstance();
-                    addFragmentInContainer(R.id.list_fragment_container, listFragment, false);
-                }
-                return listFragment;
-            default:
-                throw new IllegalArgumentException("Invalid require fragment ===> " + requireFragment);
-        }
-    }
-    */
-
-
-    private void addFragmentInContainer(int containerID, Fragment fragmentToAdd, boolean hideFragment) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction()
-                .add(containerID, fragmentToAdd);
-
-        if (hideFragment) {
-            transaction.hide(fragmentToAdd)
-                    .commit();
-        } else {
-            transaction.commit();
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
 
-        Log.d(TAG, "onResume: Default adapter is enable ? ===>" + BluetoothAdapter.getDefaultAdapter().isEnabled());
-        if (mainBinding.includeToolbar.bluetoothOnOff.isChecked() || BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-            Log.d(TAG, "onResume: Inside the IF");
-            searchFragment.showViews(true);
-            mainBinding.includeToolbar.bluetoothOnOff.setChecked(true);
-        } else {
-            Log.d(TAG, "onResume: Inside the ELSE");
-            searchFragment.showViews(false);
-            mainBinding.includeToolbar.bluetoothOnOff.setChecked(false);
-        }
+        setUpViews();
+        registerBluetoothEnableBroadcast();
 
-        registerBluetoothEnableReceiver();
         if (presenter.isDeviceDiscoveryInProgress()) {
             presenter.registerBroadcast();
+        }
+    }
+
+    void setUpViews() {
+        Log.d(TAG, "setUpViews: Default adapter is enable ? ===>" + BluetoothAdapter.getDefaultAdapter().isEnabled());
+        if (mainBinding.includeToolbar.bluetoothOnOff.isChecked() || BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+            searchFragment.showViews(true);
+            mainBinding.includeToolbar.bluetoothOnOff.setChecked(true);
+            searchFragment.updateListSize(presenter.getPairedDevices().size(), true);
+        } else {
+            searchFragment.showViews(false);
+            mainBinding.includeToolbar.bluetoothOnOff.setChecked(false);
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterBluetoothBroadcast();
-
-        if (presenter.getBluetoothEnableReceiver() != null) {
-            unregisterReceiver(presenter.getBluetoothEnableReceiver());
-            Log.e(TAG, "onPause: Unregister the bluetooth enable or disable broadcast successfully");
-            presenter.setBluetoothEnableReceiver(null);
-        }
+        unregisterBluetoothDiscoveryBroadcast();
+        unregisterBluetoothEnableBroadcast();
     }
 
     @Override
@@ -218,37 +130,42 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     }
 
     @Override
-    public void registerBluetoothBroadcast() {
-        Log.e(TAG, "registerBluetoothBroadcast: REGISTER START");
+    public void registerBluetoothDiscoveryBroadcast() {
         if (presenter.getDiscoveryReceiver() == null) {
-            Log.d(TAG, "registerBluetoothBroadcast: Defining the broadcast");
+            Log.d(TAG, "registerBluetoothDiscoveryBroadcast: Defining the broadcast");
             presenter.broadcastDefine();
-        } else {
-            Log.e(TAG, "registerBluetoothBroadcast: Broadcast is already define");
         }
         registerReceiver(presenter.getDiscoveryReceiver(), presenter.getBlutoothDiscoveryIntent());
         presenter.setDeviceDiscoveryInProgress(true);
-        Log.e(TAG, "registerBluetoothBroadcast: REGISTER END");
     }
 
-    public void unregisterBluetoothBroadcast() {
-        Log.e(TAG, "unregisterBluetoothBroadcast: UN-REGISTER START");
+    @Override
+    public void unregisterBluetoothDiscoveryBroadcast() {
         if (presenter.getDiscoveryReceiver() != null) {
             unregisterReceiver(presenter.getDiscoveryReceiver());
             presenter.setDiscoveryReceiver(null);
-            Log.d(TAG, "unregisterBluetoothBroadcast: Broadcast Unregister Successfully");
+            Log.d(TAG, "unregisterBluetoothDiscoveryBroadcast: Broadcast Unregister Successfully");
         }
-        Log.e(TAG, "unregisterBluetoothBroadcast: UN-REGISTER END");
     }
 
-    private void registerBluetoothEnableReceiver() {
+    @Override
+    public void registerBluetoothEnableBroadcast() {
         if (presenter.getBluetoothEnableReceiver() == null) {
             presenter.defineBluetoothEnableBroadcast();
-            Log.d(TAG, "onCreate: Registering the enable or disable broadcast successfully");
+            Log.d(TAG, "registerBluetoothEnableBroadcast: Registering the enable or disable broadcast successfully");
         }
 
         IntentFilter enableFilter = new IntentFilter();
         enableFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(presenter.getBluetoothEnableReceiver(), enableFilter);
+    }
+
+    @Override
+    public void unregisterBluetoothEnableBroadcast() {
+        if (presenter.getBluetoothEnableReceiver() != null) {
+            unregisterReceiver(presenter.getBluetoothEnableReceiver());
+            Log.d(TAG, "unregisterBluetoothEnableBroadcast: Unregister the bluetooth enable or disable broadcast successfully");
+            presenter.setBluetoothEnableReceiver(null);
+        }
     }
 }

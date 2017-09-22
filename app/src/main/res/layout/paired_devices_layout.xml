@@ -5,15 +5,21 @@
     <data>
 
         <variable
-            name="deviceName"
-            type="String" />
+            name="device"
+            type="android.bluetooth.BluetoothDevice" />
+
+        <variable
+            name="deviceType"
+            type="Integer" />
     </data>
 
-    <android.support.constraint.ConstraintLayout
-        xmlns:tools="http://schemas.android.com/tools"
+    <android.support.constraint.ConstraintLayout xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/paired_devices_parent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
 
 
         <ImageView
@@ -28,6 +34,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:setImageResource="@{deviceType}"
             app:srcCompat="@drawable/phone_icon" />
 
         <TextView
@@ -37,11 +44,11 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="16dp"
-            tools:text="@{deviceName}"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintLeft_toRightOf="@+id/device_image_view"
             app:layout_constraintRight_toLeftOf="@+id/device_setting_image_view"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@{device.getName() != null ? device.getName() : device.getAddress()}" />
 
         <ImageView
             android:id="@+id/device_setting_image_view"

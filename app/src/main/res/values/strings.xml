@@ -8,4 +8,6 @@
     <string name="paired_devices_string">Paired Devices</string>
     <string name="available_devices_string">Available Devices</string>
     <string name="device_name_string">Device Name</string>
+    <string name="no_device_found">No device found</string>
+    <string name="number_of_devices">0</string>
 </resources>

@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/bluetooth_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary">
+        android:background="@color/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        app:elevation="4dp"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <RelativeLayout
+        <Switch
+            android:id="@+id/bluetooth_on_off"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <Switch
-                android:id="@+id/bluetooth_on_off"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_margin="8dp"
-                tools:checked="false" />
-        </RelativeLayout>
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_margin="8dp"
+            tools:checked="false" />
     </android.support.v7.widget.Toolbar>
 </layout>

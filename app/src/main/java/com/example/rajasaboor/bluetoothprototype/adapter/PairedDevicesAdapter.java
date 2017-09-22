@@ -1,8 +1,11 @@
 package com.example.rajasaboor.bluetoothprototype.adapter;
 
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.databinding.DataBindingUtil;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,11 +23,13 @@ import java.util.List;
 public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdapter.ViewHolder> {
     private static final String TAG = PairedDevicesAdapter.class.getSimpleName();
     private List<BluetoothDevice> deviceList = new ArrayList<>();
-    private boolean isPairedAdapter;
+    private final boolean isPairedAdapter;
+    private final OnRecyclerViewTapped onRecyclerViewTapped;
 
-    public PairedDevicesAdapter(List<BluetoothDevice> deviceList, boolean isPairedAdapter) {
+    public PairedDevicesAdapter(List<BluetoothDevice> deviceList, boolean isPairedAdapter, OnRecyclerViewTapped onRecyclerViewTapped) {
         this.deviceList = deviceList;
         this.isPairedAdapter = isPairedAdapter;
+        this.onRecyclerViewTapped = onRecyclerViewTapped;
     }
 
     @Override
@@ -43,25 +48,70 @@ public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdap
         return (deviceList != null ? deviceList.size() : 0);
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private PairedDevicesLayoutBinding binding;
 
         ViewHolder(PairedDevicesLayoutBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
+
+            binding.pairedDevicesParent.setOnClickListener(this);
         }
 
         void setItem(BluetoothDevice item) {
-            binding.setDeviceName(item.getName());
+            binding.setDevice(item);
+            binding.setDeviceType(getDeviceIcon(item.getBluetoothClass()));
 
             if (!isPairedAdapter) {
                 binding.deviceSettingImageView.setVisibility(View.GONE);
             }
+        }
+
+        @Override
+        public void onClick(View view) {
+            Log.d(TAG, "onClick: start");
+            if ((onRecyclerViewTapped == null) || (getAdapterPosition() == RecyclerView.NO_POSITION)) {
+                Log.e(TAG, "onClick: Something is wrong with adapter position ---> " + getAdapterPosition());
+                return;
+            }
+
+            switch (view.getId()) {
+                case R.id.device_name_text_view:
+                    Log.d(TAG, "onClick: Case 1");
+                    onRecyclerViewTapped.onRecyclerViewTapped(getAdapterPosition(), isPairedAdapter, false);
+                    break;
+                case R.id.device_setting_image_view:
+                    Log.d(TAG, "onClick: Case Settings");
+                    onRecyclerViewTapped.onRecyclerViewTapped(getAdapterPosition(), isPairedAdapter, true);
+                    break;
+            }
+            Log.d(TAG, "onClick: end");
         }
     }
 
     public void updateList(List<BluetoothDevice> deviceList) {
         this.deviceList = deviceList;
         notifyDataSetChanged();
+    }
+
+    private int getDeviceIcon(BluetoothClass bluetoothClass) {
+        int imageResource = R.drawable.bluetooth_icon;
+
+        switch (bluetoothClass.getDeviceClass()) {
+            case BluetoothClass.Device.PHONE_SMART:
+                imageResource = R.drawable.phone_icon;
+                break;
+            case BluetoothClass.Device.COMPUTER_LAPTOP:
+                imageResource = R.drawable.laptop_icon;
+                break;
+            default:
+                Log.d(TAG, "onReceive: Other device");
+
+        }
+        return imageResource;
+    }
+
+    public interface OnRecyclerViewTapped {
+        void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped);
     }
 }

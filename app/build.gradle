@@ -12,7 +12,8 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         buildConfigField "int", "BLUETOOTH_REQUEST_CODE", "1001"
-        buildConfigField "int", "ACCESS_COARSE_LOCATION", "1002"
+        buildConfigField "int", "ACCESS_COARSE_LOCATION_REQUEST_CODE", "1002"
+        buildConfigField "int", "ACCESS_FINE_LOCATION_REQUEST_CODE", "1003"
         buildConfigField "String", "IS_NEW_DEVICE_FOUND_KEY", '"device_found_key"'
         buildConfigField "String", "SOCKET_CREATE_BOND_METHOD_NAME", '"createBond"'
         buildConfigField "String", "REMOVE_BOND_METHOD_NAME", '"removeBond"'
@@ -23,7 +24,10 @@ android {
         buildConfigField "int", "DEVICE_LIST_FRAGMENT", "3"
         buildConfigField "String", "APP_NAME", '"bluetooth-chat"'
         buildConfigField "String", "UUID", '"1a03ae0e-fef1-447e-afd1-fd692ae6551b"'
+        buildConfigField "String", "DISCOVER_DEVICES", '"discover_devices"'
         buildConfigField "String", "CONNECTION_STATUS_KEY", '"msg"'
+        buildConfigField "String", "NUMBER_OF_PAIRED_DEVICES", '"paired_devices"'
+        buildConfigField "String", "NUMBER_OF_DISCOVERED_DEVICES", '"discovered_devices"'
         buildConfigField "int", "STATE_NONE", "-1"
         buildConfigField "int", "STATE_DISCONNECTED", "0"
         buildConfigField "int", "STATE_CONNECTING", "1"
