@@ -27,6 +27,8 @@ import android.widget.Toast;
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.adapter.PairedDevicesAdapter;
+import com.example.rajasaboor.bluetoothprototype.chat.ChatActivity;
+import com.example.rajasaboor.bluetoothprototype.communication.CommunicationActivity;
 import com.example.rajasaboor.bluetoothprototype.databinding.MainFragmentBinding;
 
 import java.util.ArrayList;
@@ -280,7 +282,6 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
             resetListSizeTextViews();
         }
         Log.d(TAG, "onCheckedChanged: end");
-
     }
 
     @Override
@@ -303,8 +304,44 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
             }
         } else if ((isPairedAdapter) && (isSettingsTapped) && (view != null)) {
             showPopUpMenu(presenter.getPairedDevices().get(position), view);
+        } else if ((isPairedAdapter) && (!isSettingsTapped) && (view == null)) {
+            Log.d(TAG, "onRecyclerViewTapped: Tap on Adapter");
+            presenter.setSelectedDevice(presenter.getPairedDevices().get(position));
+            checkIsDeviceReachAble();
+            Log.d(TAG, "onRecyclerViewTapped: end");
         }
-        Log.d(TAG, "onRecyclerViewTapped: end");
+    }
+
+    private void checkIsDeviceReachAble() {
+        Log.d(TAG, "checkIsDeviceReachAble: start");
+        if (presenter.getDiscoveryDevicesList() == null || presenter.getDiscoveryDevicesList().size() == 0) {
+            if (presenter.getDiscoveryReceiver() == null) {
+                if (!presenter.isDeviceBluetoothIsTurnedOn()) {
+                    presenter.turnOnBluetooth(true);
+                }
+                showDiscoveryProgressBar(true);
+                presenter.setDeviceDiscoveryForChatActivity(true);
+                presenter.registerDeviceDiscoveryBroadcast();
+            }
+        } else {
+            isSelectedDeviceIsReachable();
+        }
+        Log.d(TAG, "checkIsDeviceReachAble: end");
+    }
+
+    @Override
+    public void isSelectedDeviceIsReachable() {
+        if (presenter.getDiscoveryDevicesList().contains(presenter.getSelectedDevice())) {
+            startChatActivity();
+        } else {
+            showToast(null, R.string.device_not_reachable);
+        }
+    }
+
+    @Override
+    public void startChatActivity() {
+        Intent chatIntent = new Intent(getContext(), CommunicationActivity.class);
+        startActivity(chatIntent);
     }
 
     public void openAppSettings() {

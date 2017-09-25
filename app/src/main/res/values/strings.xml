@@ -15,4 +15,6 @@
     <string name="unpair_msg">%1$s unpaired successfully</string>
     <string name="pair_cancel_msg">Failed to paired with %1$s</string>
     <string name="already_pair_msg">Already paired with this device</string>
+    <string name="title_activity_communication">Communication</string>
+    <string name="device_not_reachable">This device is not reachable</string>
 </resources>

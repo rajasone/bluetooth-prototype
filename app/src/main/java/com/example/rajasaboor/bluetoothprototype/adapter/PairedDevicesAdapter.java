@@ -56,6 +56,7 @@ public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdap
 
             binding.pairedDevicesParent.setOnClickListener(this);
             binding.deviceSettingImageView.setOnClickListener(this);
+            binding.pairedDevicesParent.setOnClickListener(this);
         }
 
         void setItem(BluetoothDevice item) {

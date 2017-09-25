@@ -62,6 +62,10 @@ public interface SearchContract {
         void onCheckedChanged(CompoundButton compoundButton, boolean b);
 
         void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped, View view);
+
+        void startChatActivity();
+
+        void isSelectedDeviceIsReachable();
     }
 
     interface Presenter {
@@ -115,5 +119,13 @@ public interface SearchContract {
         void setPairBroadcast(BroadcastReceiver pairBroadcastReceiver);
 
         void unregisterBluetoothDiscoveryBroadcast();
+
+        boolean isDeviceDiscoveryForChatActivity();
+
+        void setDeviceDiscoveryForChatActivity(boolean deviceDiscoveryForChatActivity);
+
+        BluetoothDevice getSelectedDevice();
+
+        void setSelectedDevice(BluetoothDevice selectedDevice);
     }
 }

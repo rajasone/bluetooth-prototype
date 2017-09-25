@@ -41,8 +41,11 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         searchFragment.setPresenter(presenter);
         mainBinding.includeToolbar.bluetoothOnOff.setOnCheckedChangeListener(searchFragment);
 
-        if ((savedInstanceState != null) && (savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS))) {
-            presenter.setDeviceDiscoveryInProgress(true);
+        if (savedInstanceState != null) {
+//            if (savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS)) {
+            presenter.setDeviceDiscoveryInProgress(savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS));
+//            }
+            presenter.setDeviceDiscoveryForChatActivity((savedInstanceState.getBoolean(BuildConfig.IS_SEARCH_FOR_CHAT, false)));
         }
     }
 
@@ -54,7 +57,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         setUpViews();
         registerBluetoothEnableBroadcast();
 
-        if (presenter.isDeviceDiscoveryInProgress()) {
+        if (presenter.isDeviceDiscoveryInProgress() || presenter.isDeviceDiscoveryForChatActivity()) {
             presenter.registerDeviceDiscoveryBroadcast();
         }
     }
@@ -114,6 +117,11 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         if (presenter.isDeviceDiscoveryInProgress()) {
             outState.putBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS, true);
         }
+
+        if (presenter.isDeviceDiscoveryForChatActivity()) {
+            outState.putBoolean(BuildConfig.IS_SEARCH_FOR_CHAT, presenter.isDeviceDiscoveryForChatActivity());
+        }
+
     }
 
     @Override

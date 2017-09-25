@@ -41,6 +41,10 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     private BroadcastReceiver pairAndUnpairBluetoothBroadcast;
 
+    private boolean isDeviceDiscoveryForChatActivity;
+    private BluetoothDevice selectedDevice;
+
+
     SearchPresenter(SearchContract.ActivityView activityView, SearchContract.FragmentView fragmentView) {
         this.activityView = activityView;
         this.fragmentView = fragmentView;
@@ -86,6 +90,8 @@ public class SearchPresenter implements SearchContract.Presenter {
                     setDeviceDiscoveryInProgress(false);
                     fragmentView.enableSearchButton(true);
                     fragmentView.showDiscoveryProgressBar(false);
+                    fragmentView.isSelectedDeviceIsReachable();
+                    setDeviceDiscoveryForChatActivity(false);
                 }
                 Log.d(TAG, "onReceive: end");
             }
@@ -266,6 +272,7 @@ public class SearchPresenter implements SearchContract.Presenter {
                         fragmentView.showToast(device.getName() != null ? device.getName() : device.getAddress(), R.string.pair_msg);
                         fragmentView.showAvailableDeviceInRecyclerView(getPairedDevices(), false);
                         fragmentView.updateListSize(getPairedDevices().size(), true);
+                        fragmentView.startChatActivity();
                     } else if (currentState == BluetoothDevice.BOND_NONE && previousState == BluetoothDevice.BOND_BONDING) {
                         Log.e(TAG, "onReceive: Cancel pressed");
                         fragmentView.showToast(device.getName() != null ? device.getName() : device.getAddress(), R.string.pair_cancel_msg);
@@ -284,5 +291,25 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void unregisterBluetoothDiscoveryBroadcast() {
         activityView.unregisterBluetoothDiscoveryBroadcast();
+    }
+
+    @Override
+    public boolean isDeviceDiscoveryForChatActivity() {
+        return isDeviceDiscoveryForChatActivity;
+    }
+
+    @Override
+    public void setDeviceDiscoveryForChatActivity(boolean deviceDiscoveryForChatActivity) {
+        this.isDeviceDiscoveryForChatActivity = deviceDiscoveryForChatActivity;
+    }
+
+    @Override
+    public BluetoothDevice getSelectedDevice() {
+        return selectedDevice;
+    }
+
+    @Override
+    public void setSelectedDevice(BluetoothDevice selectedDevice) {
+        this.selectedDevice = selectedDevice;
     }
 }
