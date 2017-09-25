@@ -434,12 +434,7 @@ public class DevicesListPresenter implements DevicesListContract.Presenter, Adap
                 }
             }
         };
-        /*
-        else if (currentState == BluetoothDevice.BOND_NONE && previousState == BluetoothDevice.BOND_BONDED) {
-                        Log.d(TAG, "onReceive: Device UNPAIRED");
-                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    }
-         */
+
         Log.d(TAG, "pairingProcessBroadcast: end");
     }
 

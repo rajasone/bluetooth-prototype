@@ -8,12 +8,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 
+import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 
 import java.lang.reflect.InvocationTargetException;
@@ -147,7 +149,7 @@ public class SearchPresenter implements SearchContract.Presenter {
     }
 
     @Override
-    public void registerBroadcast() {
+    public void registerDeviceDiscoveryBroadcast() {
         setDeviceDiscoveryInProgress(true);
         activityView.registerBluetoothDiscoveryBroadcast();
         fragmentView.enableSearchButton(false);
@@ -205,8 +207,14 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     @Override
     public void registerPairBroadcast() {
-        activityView.registerBroadcast();
+        activityView.registerPairBroadcast();
     }
+
+    @Override
+    public void setPairBroadcast(BroadcastReceiver pairBroadcastReceiver) {
+        this.pairAndUnpairBluetoothBroadcast = pairBroadcastReceiver;
+    }
+
 
     @Override
     public void pairDevice(BluetoothDevice device) {
@@ -222,41 +230,6 @@ public class SearchPresenter implements SearchContract.Presenter {
         }
     }
 
-    @Override
-    public void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped) {
-        Log.d(TAG, "onRecyclerViewTapped: start");
-        Log.d(TAG, "onRecyclerViewTapped: Paired Adapter --->" + isPairedAdapter);
-        Log.d(TAG, "onRecyclerViewTapped: Setting Adapter --->" + isSettingsTapped);
-
-        if ((!isPairedAdapter) && (!isSettingsTapped)) {
-            Log.d(TAG, "onRecyclerViewTapped: in If");
-//            fragmentView.showToast((TextUtils.isEmpty(discoveryDevicesList.get(position).getName()) ? discoveryDevicesList.get(position).getAddress() :
-//                    discoveryDevicesList.get(position).getName()));
-            if (getPairedDevices().contains(discoveryDevicesList.get(position))) {
-                Log.d(TAG, "onRecyclerViewTapped: Device is already Paired");
-            } else {
-                Log.d(TAG, "onRecyclerViewTapped: Pair the Device");
-                if (getPairBroadcast() == null) {
-                    definePairBroadcast();
-                }
-                registerPairBroadcast();
-                pairDevice(discoveryDevicesList.get(position));
-            }
-        } else if ((isPairedAdapter) && (isSettingsTapped)) {
-            fragmentView.showToast("Settings tapped");
-        } else {
-            Log.d(TAG, "onRecyclerViewTapped: in ELSE");
-//            fragmentView.showToast((TextUtils.isEmpty(getPairedDevices().get(position).getName()) ? getPairedDevices().get(position).getAddress() :
-//                    getPairedDevices().get(position).getName()));
-
-        }
-        Log.d(TAG, "onRecyclerViewTapped: end");
-    }
-
-    @Override
-    public void createPopUpMenu(int position, View view) {
-        fragmentView.showPopUpMenu(getPairedDevices().get(position), view);
-    }
 
     @Override
     public void unpairDevice(BluetoothDevice device) {
@@ -285,21 +258,21 @@ public class SearchPresenter implements SearchContract.Presenter {
 
                     Log.d(TAG, "onReceive: Current state ====> " + currentState);
                     Log.d(TAG, "onReceive: Previous state ====> " + previousState);
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
 
                     if (currentState == BluetoothDevice.BOND_BONDED && previousState == BluetoothDevice.BOND_BONDING) {
                         Log.d(TAG, "onReceive: Device PAIRED");
-                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                        fragmentView.showToast((device.getName() != null ? device.getName() : device.getAddress() + " paired successfully"));
+                        fragmentView.showToast(device.getName() != null ? device.getName() : device.getAddress(), R.string.pair_msg);
                         fragmentView.showAvailableDeviceInRecyclerView(getPairedDevices(), false);
+                        fragmentView.updateListSize(getPairedDevices().size(), true);
                     } else if (currentState == BluetoothDevice.BOND_NONE && previousState == BluetoothDevice.BOND_BONDING) {
                         Log.e(TAG, "onReceive: Cancel pressed");
-                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-//                        fragmentView.showToast((device.getName() != null ? device.getName() : device.getAddress() + " paired un successfully"));
-                        fragmentView.showToast("paired un successfully");
+                        fragmentView.showToast(device.getName() != null ? device.getName() : device.getAddress(), R.string.pair_cancel_msg);
                     } else if (currentState == BluetoothDevice.BOND_NONE && previousState == BluetoothDevice.BOND_BONDED) {
                         Log.d(TAG, "onReceive: Device UNPAIRED");
-                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                        fragmentView.showToast((device.getName() != null ? device.getName() : device.getAddress() + " Un paired successfully"));
+                        fragmentView.showToast(device.getName() != null ? device.getName() : device.getAddress(), R.string.unpair_msg);
+                        fragmentView.updateListSize(getPairedDevices().size(), true);
                         fragmentView.showAvailableDeviceInRecyclerView(getPairedDevices(), false);
                     }
                 }
@@ -308,44 +281,8 @@ public class SearchPresenter implements SearchContract.Presenter {
         Log.d(TAG, "definePairBroadcast: end");
     }
 
-
     @Override
-    public void onClick(View view) {
-        Log.d(TAG, "onClick: start");
-        switch (view.getId()) {
-            case R.id.search_bluetooth_button:
-                if (isDeviceHaveBluetooth()) {
-                    fragmentView.permissionsValidation(Manifest.permission.ACCESS_COARSE_LOCATION);
-                    if (fragmentView.isDeviceHaveBluetoothAndPermissionGranted()) {
-                        fragmentView.showDiscoveryProgressBar(true);
-                        fragmentView.resetListSizeTextViews();
-                        fragmentView.resetAdapter(false);
-                        registerBroadcast();
-                    } else {
-                        fragmentView.showToast("Enable bluetooth");
-                    }
-                } else {
-                    Log.e(TAG, "onClick: Device have no Bluetooth");
-                }
-                break;
-        }
-        Log.d(TAG, "onClick: end");
-    }
-
-    @Override
-    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-        Log.d(TAG, "onCheckedChanged: start");
-
-        if (isChecked) {
-            fragmentView.showViews(true);
-            turnOnBluetooth(true);
-        } else {
-            fragmentView.showViews(false);
-            turnOnBluetooth(false);
-            fragmentView.resetAdapter(false);
-            activityView.unregisterBluetoothDiscoveryBroadcast();
-            fragmentView.resetListSizeTextViews();
-        }
-        Log.d(TAG, "onCheckedChanged: end");
+    public void unregisterBluetoothDiscoveryBroadcast() {
+        activityView.unregisterBluetoothDiscoveryBroadcast();
     }
 }

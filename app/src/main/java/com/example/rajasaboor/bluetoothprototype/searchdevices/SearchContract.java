@@ -29,10 +29,10 @@ public interface SearchContract {
 
         void unregisterPairBroadcast();
 
-        void registerBroadcast();
+        void registerPairBroadcast();
     }
 
-    interface FragmentView {
+    interface FragmentView extends View.OnClickListener, CompoundButton.OnCheckedChangeListener, PairedDevicesAdapter.OnRecyclerViewTapped {
         void enableSearchButton(boolean enable);
 
         void showViews(boolean bluetoothOnViews);
@@ -43,7 +43,7 @@ public interface SearchContract {
 
         boolean isDeviceHaveBluetoothAndPermissionGranted();
 
-        void showToast(String message);
+        void showToast(String message, int resourceID);
 
         void resetAdapter(boolean resetPairedAdapter);
 
@@ -54,9 +54,17 @@ public interface SearchContract {
         void showDiscoveryProgressBar(boolean show);
 
         void showPopUpMenu(BluetoothDevice device, View view);
+
+        @Override
+        void onClick(View view);
+
+        @Override
+        void onCheckedChanged(CompoundButton compoundButton, boolean b);
+
+        void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped, View view);
     }
 
-    interface Presenter extends View.OnClickListener, CompoundButton.OnCheckedChangeListener, PairedDevicesAdapter.OnRecyclerViewTapped {
+    interface Presenter {
 
         boolean isDeviceHaveBluetooth();
 
@@ -74,7 +82,7 @@ public interface SearchContract {
 
         Intent getSettingsIntent(Uri uri);
 
-        void registerBroadcast();
+        void registerDeviceDiscoveryBroadcast();
 
         boolean isDeviceDiscoveryInProgress();
 
@@ -86,23 +94,13 @@ public interface SearchContract {
 
         void defineBluetoothEnableBroadcast();
 
-        @Override
-        void onClick(View view);
-
         void turnOnBluetooth(boolean turnOn);
-
-        @Override
-        void onCheckedChanged(CompoundButton compoundButton, boolean b);
 
         List<BluetoothDevice> getPairedDevices();
 
         List<BluetoothDevice> getDiscoveryDevicesList();
 
         void setDiscoveryDevicesList(List<BluetoothDevice> discoveryDevicesList);
-
-        void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped);
-
-        void createPopUpMenu(int position, View view);
 
         void unpairDevice(BluetoothDevice device);
 
@@ -113,5 +111,9 @@ public interface SearchContract {
         BroadcastReceiver getPairBroadcast();
 
         void registerPairBroadcast();
+
+        void setPairBroadcast(BroadcastReceiver pairBroadcastReceiver);
+
+        void unregisterBluetoothDiscoveryBroadcast();
     }
 }

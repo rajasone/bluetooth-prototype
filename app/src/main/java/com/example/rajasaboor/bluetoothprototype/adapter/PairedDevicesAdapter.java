@@ -55,6 +55,7 @@ public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdap
             this.binding = binding;
 
             binding.pairedDevicesParent.setOnClickListener(this);
+            binding.deviceSettingImageView.setOnClickListener(this);
         }
 
         void setItem(BluetoothDevice item) {
@@ -74,17 +75,12 @@ public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdap
                 return;
             }
 
-            if (isPairedAdapter)
-                onRecyclerViewTapped.createPopUpMenu(getAdapterPosition(), view);
-
             switch (view.getId()) {
                 case R.id.paired_devices_parent:
-                    Log.d(TAG, "onClick: Case 1");
-                    onRecyclerViewTapped.onRecyclerViewTapped(getAdapterPosition(), isPairedAdapter, false);
+                    onRecyclerViewTapped.onRecyclerViewTapped(getAdapterPosition(), isPairedAdapter, false, null);
                     break;
                 case R.id.device_setting_image_view:
-                    Log.d(TAG, "onClick: Case Settings");
-                    onRecyclerViewTapped.onRecyclerViewTapped(getAdapterPosition(), isPairedAdapter, true);
+                    onRecyclerViewTapped.onRecyclerViewTapped(getAdapterPosition(), isPairedAdapter, true, view);
                     break;
             }
             Log.d(TAG, "onClick: end");
@@ -117,16 +113,12 @@ public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdap
             case BluetoothClass.Device.AUDIO_VIDEO_VIDEO_MONITOR:
                 imageResource = R.drawable.tv_icon;
                 break;
-            default:
-                Log.d(TAG, "onReceive: Other device");
 
         }
         return imageResource;
     }
 
     public interface OnRecyclerViewTapped {
-        void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped);
-
-        void createPopUpMenu(int position, View view);
+        void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped, View view);
     }
 }

@@ -11,4 +11,8 @@
     <string name="no_device_found">No device found</string>
     <string name="number_of_devices">0</string>
     <string name="unpair">Unpair</string>
+    <string name="pair_msg">%1$s paired successfully</string>
+    <string name="unpair_msg">%1$s unpaired successfully</string>
+    <string name="pair_cancel_msg">Failed to paired with %1$s</string>
+    <string name="already_pair_msg">Already paired with this device</string>
 </resources>

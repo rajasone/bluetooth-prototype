@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
@@ -95,7 +97,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
 
 
     void setUpDiscoverDevicesRecyclerView() {
-        PairedDevicesAdapter adapter = new PairedDevicesAdapter(new ArrayList<BluetoothDevice>(), false, presenter);
+        PairedDevicesAdapter adapter = new PairedDevicesAdapter(new ArrayList<BluetoothDevice>(), false, this);
         mainFragmentBinding.availableDevicesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mainFragmentBinding.availableDevicesRecyclerView.setAdapter(adapter);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), new LinearLayoutManager(getContext()).getOrientation());
@@ -103,17 +105,11 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     }
 
     void setUpPairedDevicesRecyclerView() {
-        PairedDevicesAdapter adapter = new PairedDevicesAdapter(new ArrayList<>(BluetoothAdapter.getDefaultAdapter().getBondedDevices()), true, presenter);
+        PairedDevicesAdapter adapter = new PairedDevicesAdapter(new ArrayList<>(BluetoothAdapter.getDefaultAdapter().getBondedDevices()), true, this);
         mainFragmentBinding.pairedDevicesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mainFragmentBinding.pairedDevicesRecyclerView.setAdapter(adapter);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getContext(), new LinearLayoutManager(getContext()).getOrientation());
         mainFragmentBinding.pairedDevicesRecyclerView.addItemDecoration(dividerItemDecoration);
-    }
-
-    public void onClick() {
-        Log.d(TAG, "onClick: start");
-        presenter.onClick(mainFragmentBinding.searchBluetoothButton);
-        Log.d(TAG, "onClick: end");
     }
 
     @Override
@@ -174,8 +170,14 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     }
 
     @Override
-    public void showToast(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    public void showToast(String message, int resourceID) {
+        if (resourceID == BuildConfig.NO_RESOURCE) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        } else {
+            String temp = String.format(String.valueOf(getString(resourceID)), message);
+            Log.d(TAG, "showToast: Temp ====> " + temp);
+            Toast.makeText(getContext(), temp, Toast.LENGTH_SHORT).show();
+        }
     }
 
     /*
@@ -215,6 +217,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
 
     @Override
     public void showPopUpMenu(final BluetoothDevice device, View view) {
+        Log.d(TAG, "showPopUpMenu: start");
         PopupMenu popupMenu = new PopupMenu(getContext(), view);
         getActivity().getMenuInflater().inflate(R.menu.popup_menu, popupMenu.getMenu());
         popupMenu.show();
@@ -223,16 +226,85 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.popup_unpair:
+                        Log.d(TAG, "onMenuItemClick: Unpair start");
+
                         if (presenter.getPairBroadcast() == null) {
                             presenter.definePairBroadcast();
                         }
                         presenter.registerPairBroadcast();
                         presenter.unpairDevice(device);
+                        Log.d(TAG, "onMenuItemClick: Unpair successfully");
                         return true;
                 }
                 return false;
             }
         });
+        Log.d(TAG, "showPopUpMenu: end");
+    }
+
+    @Override
+    public void onClick(View view) {
+        Log.d(TAG, "onClick: On Click Start");
+        switch (view.getId()) {
+            case R.id.search_bluetooth_button:
+                if (presenter.isDeviceHaveBluetooth()) {
+                    permissionsValidation(Manifest.permission.ACCESS_COARSE_LOCATION);
+                    if (isDeviceHaveBluetoothAndPermissionGranted()) {
+                        showDiscoveryProgressBar(true);
+                        resetListSizeTextViews();
+                        resetAdapter(false);
+                        presenter.registerDeviceDiscoveryBroadcast();
+                    } else {
+                        showToast("Enable bluetooth", BuildConfig.NO_RESOURCE);
+                    }
+                } else {
+                    Log.e(TAG, "onClick: Device have no Bluetooth");
+                }
+                break;
+        }
+        Log.d(TAG, "onClick: On Click End");
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+        Log.d(TAG, "onCheckedChanged: start");
+
+        if (isChecked) {
+            showViews(true);
+            presenter.turnOnBluetooth(true);
+        } else {
+            showViews(false);
+            presenter.turnOnBluetooth(false);
+            resetAdapter(false);
+            presenter.unregisterBluetoothDiscoveryBroadcast();
+            resetListSizeTextViews();
+        }
+        Log.d(TAG, "onCheckedChanged: end");
+
+    }
+
+    @Override
+    public void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped, View view) {
+        Log.d(TAG, "onRecyclerViewTapped: start");
+        Log.d(TAG, "onRecyclerViewTapped: Paired Adapter --->" + isPairedAdapter);
+        Log.d(TAG, "onRecyclerViewTapped: Setting Adapter --->" + isSettingsTapped);
+
+        if ((!isPairedAdapter) && (!isSettingsTapped)) {
+            Log.d(TAG, "onRecyclerViewTapped: in If");
+            if (presenter.getPairedDevices().contains(presenter.getDiscoveryDevicesList().get(position))) {
+                showToast(null, R.string.already_pair_msg);
+            } else {
+                Log.d(TAG, "onRecyclerViewTapped: Pair the Device");
+                if (presenter.getPairBroadcast() == null) {
+                    presenter.definePairBroadcast();
+                }
+                presenter.registerPairBroadcast();
+                presenter.pairDevice(presenter.getDiscoveryDevicesList().get(position));
+            }
+        } else if ((isPairedAdapter) && (isSettingsTapped) && (view != null)) {
+            showPopUpMenu(presenter.getPairedDevices().get(position), view);
+        }
+        Log.d(TAG, "onRecyclerViewTapped: end");
     }
 
     public void openAppSettings() {
