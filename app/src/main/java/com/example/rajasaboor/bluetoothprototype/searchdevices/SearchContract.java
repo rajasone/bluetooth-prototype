@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.CompoundButton;
 
 import com.example.rajasaboor.bluetoothprototype.adapter.PairedDevicesAdapter;
-import com.example.rajasaboor.bluetoothprototype.discoverdeviceslist.DevicesListContract;
 
 import java.util.List;
 
@@ -27,6 +26,10 @@ public interface SearchContract {
         void registerBluetoothEnableBroadcast();
 
         void unregisterBluetoothEnableBroadcast();
+
+        void unregisterPairBroadcast();
+
+        void registerBroadcast();
     }
 
     interface FragmentView {
@@ -49,6 +52,8 @@ public interface SearchContract {
         void resetListSizeTextViews();
 
         void showDiscoveryProgressBar(boolean show);
+
+        void showPopUpMenu(BluetoothDevice device, View view);
     }
 
     interface Presenter extends View.OnClickListener, CompoundButton.OnCheckedChangeListener, PairedDevicesAdapter.OnRecyclerViewTapped {
@@ -96,5 +101,17 @@ public interface SearchContract {
         void setDiscoveryDevicesList(List<BluetoothDevice> discoveryDevicesList);
 
         void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped);
+
+        void createPopUpMenu(int position, View view);
+
+        void unpairDevice(BluetoothDevice device);
+
+        void pairDevice(BluetoothDevice device);
+
+        void definePairBroadcast();
+
+        BroadcastReceiver getPairBroadcast();
+
+        void registerPairBroadcast();
     }
 }

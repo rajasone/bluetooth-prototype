@@ -14,8 +14,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -203,12 +205,34 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
 
     @Override
     public void resetListSizeTextViews() {
-        mainFragmentBinding.numberOfAvailableDevices.setText("");
+        mainFragmentBinding.numberOfAvailableDevices.setText("0");
     }
 
     @Override
     public void showDiscoveryProgressBar(boolean show) {
         mainFragmentBinding.discoverProgressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void showPopUpMenu(final BluetoothDevice device, View view) {
+        PopupMenu popupMenu = new PopupMenu(getContext(), view);
+        getActivity().getMenuInflater().inflate(R.menu.popup_menu, popupMenu.getMenu());
+        popupMenu.show();
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.popup_unpair:
+                        if (presenter.getPairBroadcast() == null) {
+                            presenter.definePairBroadcast();
+                        }
+                        presenter.registerPairBroadcast();
+                        presenter.unpairDevice(device);
+                        return true;
+                }
+                return false;
+            }
+        });
     }
 
     public void openAppSettings() {
@@ -231,25 +255,27 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     @Override
     public void showViews(boolean bluetoothOnViews) {
         if (bluetoothOnViews) {
-            mainFragmentBinding.pairedDevicesTextView.setVisibility(View.VISIBLE);
-            mainFragmentBinding.pairedDevicesRecyclerView.setVisibility(View.VISIBLE);
-            mainFragmentBinding.availableDevicesTextView.setVisibility(View.VISIBLE);
-            mainFragmentBinding.availableDevicesRecyclerView.setVisibility(View.VISIBLE);
-            mainFragmentBinding.bluetoothTurendOffTextView.setVisibility(View.INVISIBLE);
+            showView(mainFragmentBinding.pairedDevicesTextView, true);
+            showView(mainFragmentBinding.pairedDevicesRecyclerView, true);
+            showView(mainFragmentBinding.availableDevicesTextView, true);
+            showView(mainFragmentBinding.availableDevicesRecyclerView, true);
+            showView(mainFragmentBinding.bluetoothTurendOffTextView, false);
+            showView(mainFragmentBinding.numberOfAvailableDevices, true);
+            showView(mainFragmentBinding.numberOfPairedDevicesTextView, true);
             mainFragmentBinding.searchBluetoothButton.setEnabled(true);
-            mainFragmentBinding.numberOfAvailableDevices.setVisibility(View.VISIBLE);
-            mainFragmentBinding.numberOfPairedDevicesTextView.setVisibility(View.VISIBLE);
         } else {
-            mainFragmentBinding.pairedDevicesTextView.setVisibility(View.INVISIBLE);
-            mainFragmentBinding.pairedDevicesRecyclerView.setVisibility(View.INVISIBLE);
-            mainFragmentBinding.availableDevicesTextView.setVisibility(View.INVISIBLE);
-            mainFragmentBinding.availableDevicesRecyclerView.setVisibility(View.INVISIBLE);
-            mainFragmentBinding.bluetoothTurendOffTextView.setVisibility(View.VISIBLE);
+            showView(mainFragmentBinding.pairedDevicesTextView, false);
+            showView(mainFragmentBinding.pairedDevicesRecyclerView, false);
+            showView(mainFragmentBinding.availableDevicesTextView, false);
+            showView(mainFragmentBinding.availableDevicesRecyclerView, false);
+            showView(mainFragmentBinding.bluetoothTurendOffTextView, true);
+            showView(mainFragmentBinding.numberOfAvailableDevices, false);
+            showView(mainFragmentBinding.numberOfPairedDevicesTextView, false);
             mainFragmentBinding.searchBluetoothButton.setEnabled(false);
-            mainFragmentBinding.numberOfAvailableDevices.setVisibility(View.INVISIBLE);
-            mainFragmentBinding.numberOfPairedDevicesTextView.setVisibility(View.INVISIBLE);
-
-
         }
+    }
+
+    private void showView(View view, boolean show) {
+        view.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
     }
 }

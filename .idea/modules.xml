@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/bluetooth-prototype.iml" filepath="$PROJECT_DIR$/bluetooth-prototype.iml" />
       <module fileurl="file://$PROJECT_DIR$/bluetooth-prototype-feat-chat-setup.iml" filepath="$PROJECT_DIR$/bluetooth-prototype-feat-chat-setup.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bluetooth-prototype-root-refactor.iml" filepath="$PROJECT_DIR$/bluetooth-prototype-root-refactor.iml" />
     </modules>
   </component>
 </project>

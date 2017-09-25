@@ -3,7 +3,6 @@ package com.example.rajasaboor.bluetoothprototype.adapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.databinding.DataBindingUtil;
-import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -75,8 +74,11 @@ public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdap
                 return;
             }
 
+            if (isPairedAdapter)
+                onRecyclerViewTapped.createPopUpMenu(getAdapterPosition(), view);
+
             switch (view.getId()) {
-                case R.id.device_name_text_view:
+                case R.id.paired_devices_parent:
                     Log.d(TAG, "onClick: Case 1");
                     onRecyclerViewTapped.onRecyclerViewTapped(getAdapterPosition(), isPairedAdapter, false);
                     break;
@@ -102,7 +104,18 @@ public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdap
                 imageResource = R.drawable.phone_icon;
                 break;
             case BluetoothClass.Device.COMPUTER_LAPTOP:
+            case BluetoothClass.Device.COMPUTER_DESKTOP:
                 imageResource = R.drawable.laptop_icon;
+                break;
+            case BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO:
+                imageResource = R.drawable.car_icon;
+                break;
+            case BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES:
+            case BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET:
+                imageResource = R.drawable.head_phone_icon;
+                break;
+            case BluetoothClass.Device.AUDIO_VIDEO_VIDEO_MONITOR:
+                imageResource = R.drawable.tv_icon;
                 break;
             default:
                 Log.d(TAG, "onReceive: Other device");
@@ -113,5 +126,7 @@ public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdap
 
     public interface OnRecyclerViewTapped {
         void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped);
+
+        void createPopUpMenu(int position, View view);
     }
 }
