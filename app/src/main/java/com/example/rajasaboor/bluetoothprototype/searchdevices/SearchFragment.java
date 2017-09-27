@@ -256,6 +256,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
                         resetListSizeTextViews();
                         resetAdapter(false);
                         presenter.registerDeviceDiscoveryBroadcast();
+                        presenter.setDeviceDiscoveryForChatActivity(false);
                     } else {
                         showToast("Enable bluetooth", BuildConfig.NO_RESOURCE);
                     }
@@ -314,18 +315,14 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
 
     private void checkIsDeviceReachAble() {
         Log.d(TAG, "checkIsDeviceReachAble: start");
-        if (presenter.getDiscoveryDevicesList() == null || presenter.getDiscoveryDevicesList().size() == 0) {
-            if (presenter.getDiscoveryReceiver() == null) {
-                if (!presenter.isDeviceBluetoothIsTurnedOn()) {
-                    presenter.turnOnBluetooth(true);
-                }
-                showDiscoveryProgressBar(true);
-                presenter.setDeviceDiscoveryForChatActivity(true);
-                presenter.registerDeviceDiscoveryBroadcast();
-            }
-        } else {
-            isSelectedDeviceIsReachable();
+        if (!presenter.isDeviceBluetoothIsTurnedOn()) {
+            presenter.turnOnBluetooth(true);
         }
+        showDiscoveryProgressBar(true);
+        resetAdapter(false);
+        updateListSize(0, false);
+        presenter.setDeviceDiscoveryForChatActivity(true);
+        presenter.registerDeviceDiscoveryBroadcast();
         Log.d(TAG, "checkIsDeviceReachAble: end");
     }
 

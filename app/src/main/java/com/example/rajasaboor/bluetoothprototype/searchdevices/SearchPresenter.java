@@ -90,7 +90,9 @@ public class SearchPresenter implements SearchContract.Presenter {
                     setDeviceDiscoveryInProgress(false);
                     fragmentView.enableSearchButton(true);
                     fragmentView.showDiscoveryProgressBar(false);
-                    fragmentView.isSelectedDeviceIsReachable();
+                    if (isDeviceDiscoveryForChatActivity()) {
+                        fragmentView.isSelectedDeviceIsReachable();
+                    }
                     setDeviceDiscoveryForChatActivity(false);
                 }
                 Log.d(TAG, "onReceive: end");

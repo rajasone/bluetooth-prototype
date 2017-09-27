@@ -16,6 +16,16 @@ public class CommunicationActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        CommunicationFragment communicationFragment = (CommunicationFragment) getSupportFragmentManager().findFragmentById(R.id.communication_fragment_container);
+
+        if (communicationFragment == null) {
+            communicationFragment = CommunicationFragment.newInstance();
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.communication_fragment_container, communicationFragment)
+                    .commit();
+        }
     }
 
 }
