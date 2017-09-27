@@ -10,6 +10,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -17,6 +19,7 @@ import android.widget.CompoundButton;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
+import com.example.rajasaboor.bluetoothprototype.communication.BluetoothConnectionService;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -44,10 +47,15 @@ public class SearchPresenter implements SearchContract.Presenter {
     private boolean isDeviceDiscoveryForChatActivity;
     private BluetoothDevice selectedDevice;
 
+    private BluetoothConnectionService connectionService;
+    private Handler handler;
+
 
     SearchPresenter(SearchContract.ActivityView activityView, SearchContract.FragmentView fragmentView) {
         this.activityView = activityView;
         this.fragmentView = fragmentView;
+
+        defineHandler();
     }
 
     @Override
@@ -121,6 +129,7 @@ public class SearchPresenter implements SearchContract.Presenter {
                             Log.d(TAG, "onReceive: ON");
                             fragmentView.showAvailableDeviceInRecyclerView(getPairedDevices(), false);
                             fragmentView.updateListSize(getPairedDevices().size(), true);
+                            setConnectionService(new BluetoothConnectionService(getHandler()));
                             break;
                     }
                 }
@@ -274,7 +283,6 @@ public class SearchPresenter implements SearchContract.Presenter {
                         fragmentView.showToast(device.getName() != null ? device.getName() : device.getAddress(), R.string.pair_msg);
                         fragmentView.showAvailableDeviceInRecyclerView(getPairedDevices(), false);
                         fragmentView.updateListSize(getPairedDevices().size(), true);
-                        fragmentView.startChatActivity();
                     } else if (currentState == BluetoothDevice.BOND_NONE && previousState == BluetoothDevice.BOND_BONDING) {
                         Log.e(TAG, "onReceive: Cancel pressed");
                         fragmentView.showToast(device.getName() != null ? device.getName() : device.getAddress(), R.string.pair_cancel_msg);
@@ -313,5 +321,47 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void setSelectedDevice(BluetoothDevice selectedDevice) {
         this.selectedDevice = selectedDevice;
+    }
+
+
+    @Override
+    public BluetoothConnectionService getConnectionService() {
+        return connectionService;
+    }
+
+    @Override
+    public void setConnectionService(BluetoothConnectionService connectionService) {
+        this.connectionService = connectionService;
+    }
+
+    @Override
+    public Handler getHandler() {
+        return handler;
+    }
+
+    @Override
+    public void setHandler(Handler handler) {
+        this.handler = handler;
+    }
+
+    @Override
+    public void defineHandler() {
+        handler = new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message message) {
+                if (message.arg1 == BuildConfig.CONNECTED_SUCCESSFULLY) {
+                    fragmentView.showToast("Connected with " + (((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), BuildConfig.NO_RESOURCE);
+                    fragmentView.startChatActivity();
+                } else {
+                    if (message.obj != null) {
+                        fragmentView.showToast("Failed to connect with " + (((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), BuildConfig.NO_RESOURCE);
+                    }
+//                    else {
+//                        fragmentView.showToast("Failed to connect", BuildConfig.NO_RESOURCE);
+//                    }
+                }
+                return true;
+            }
+        });
     }
 }

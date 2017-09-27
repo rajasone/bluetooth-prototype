@@ -12,6 +12,7 @@ import android.view.MenuItem;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
+import com.example.rajasaboor.bluetoothprototype.communication.BluetoothConnectionService;
 import com.example.rajasaboor.bluetoothprototype.databinding.ActivityMainBinding;
 
 public class SearchActivity extends AppCompatActivity implements SearchContract.ActivityView {
@@ -42,9 +43,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         mainBinding.includeToolbar.bluetoothOnOff.setOnCheckedChangeListener(searchFragment);
 
         if (savedInstanceState != null) {
-//            if (savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS)) {
             presenter.setDeviceDiscoveryInProgress(savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS));
-//            }
             presenter.setDeviceDiscoveryForChatActivity((savedInstanceState.getBoolean(BuildConfig.IS_SEARCH_FOR_CHAT, false)));
         }
     }
@@ -52,6 +51,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
 
     @Override
     protected void onResume() {
+        Log.d(TAG, "onResume: start");
         super.onResume();
 
         setUpViews();
@@ -60,6 +60,13 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         if (presenter.isDeviceDiscoveryInProgress() || presenter.isDeviceDiscoveryForChatActivity()) {
             presenter.registerDeviceDiscoveryBroadcast();
         }
+
+        if ((presenter.getConnectionService() == null) && (BluetoothAdapter.getDefaultAdapter().isEnabled())) {
+            Log.e(TAG, "onResume: Setting up the connection service");
+            presenter.setConnectionService(new BluetoothConnectionService(presenter.getHandler()));
+        }
+
+        Log.d(TAG, "onResume: end");
     }
 
     void setUpViews() {
@@ -76,9 +83,18 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
 
     @Override
     protected void onPause() {
+        Log.d(TAG, "onPause: start");
         super.onPause();
         unregisterBluetoothDiscoveryBroadcast();
         unregisterBluetoothEnableBroadcast();
+
+        if ((presenter.getConnectionService() != null) && (presenter.isDeviceBluetoothIsTurnedOn())) {
+            Log.e(TAG, "onPause: Calling the Connection Service Cancel");
+            presenter.getConnectionService().cancel();
+            presenter.setConnectionService(null);
+
+        }
+        Log.d(TAG, "onPause: end");
     }
 
     @Override

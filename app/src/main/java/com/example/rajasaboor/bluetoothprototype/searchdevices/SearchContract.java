@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Handler;
 import android.view.View;
 import android.widget.CompoundButton;
 
 import com.example.rajasaboor.bluetoothprototype.adapter.PairedDevicesAdapter;
+import com.example.rajasaboor.bluetoothprototype.communication.BluetoothConnectionService;
 
 import java.util.List;
 
@@ -127,5 +129,15 @@ public interface SearchContract {
         BluetoothDevice getSelectedDevice();
 
         void setSelectedDevice(BluetoothDevice selectedDevice);
+
+        BluetoothConnectionService getConnectionService();
+
+        void setConnectionService(BluetoothConnectionService connectionService);
+
+        Handler getHandler();
+
+        void setHandler(Handler handler);
+
+        void defineHandler();
     }
 }

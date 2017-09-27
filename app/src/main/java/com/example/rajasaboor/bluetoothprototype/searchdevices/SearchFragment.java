@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -27,12 +28,13 @@ import android.widget.Toast;
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.adapter.PairedDevicesAdapter;
-import com.example.rajasaboor.bluetoothprototype.chat.ChatActivity;
+import com.example.rajasaboor.bluetoothprototype.communication.BluetoothConnectionService;
 import com.example.rajasaboor.bluetoothprototype.communication.CommunicationActivity;
 import com.example.rajasaboor.bluetoothprototype.databinding.MainFragmentBinding;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by rajaSaboor on 9/7/2017.
@@ -91,6 +93,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
             updateListSize(savedInstanceState.getInt(BuildConfig.NUMBER_OF_DISCOVERED_DEVICES, 0), false);
             showDiscoveryProgressBar(savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS));
             presenter.setDiscoveryDevicesList(savedInstanceState.<BluetoothDevice>getParcelableArrayList(BuildConfig.DISCOVER_DEVICES));
+            presenter.setSelectedDevice((BluetoothDevice) savedInstanceState.getParcelable(BuildConfig.SELECTED_DEVICE));
             showAvailableDeviceInRecyclerView(presenter.getDiscoveryDevicesList(), true);
         }
 
@@ -138,6 +141,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         outState.putInt(BuildConfig.NUMBER_OF_PAIRED_DEVICES, presenter.getPairedDevices().size());
         outState.putInt(BuildConfig.NUMBER_OF_DISCOVERED_DEVICES, presenter.getDiscoveryDevicesList().size());
         outState.putBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS, presenter.isDeviceDiscoveryInProgress());
+        outState.putParcelable(BuildConfig.SELECTED_DEVICE, presenter.getSelectedDevice());
         Log.d(TAG, "onSaveInstanceState: end");
     }
 
@@ -308,7 +312,11 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         } else if ((isPairedAdapter) && (!isSettingsTapped) && (view == null)) {
             Log.d(TAG, "onRecyclerViewTapped: Tap on Adapter");
             presenter.setSelectedDevice(presenter.getPairedDevices().get(position));
-            checkIsDeviceReachAble();
+            if (isDeviceHaveBluetoothAndPermissionGranted()) {
+                checkIsDeviceReachAble();
+            } else {
+                openAppSettings();
+            }
             Log.d(TAG, "onRecyclerViewTapped: end");
         }
     }
@@ -328,11 +336,20 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
 
     @Override
     public void isSelectedDeviceIsReachable() {
+        Log.d(TAG, "isSelectedDeviceIsReachable: start");
         if (presenter.getDiscoveryDevicesList().contains(presenter.getSelectedDevice())) {
-            startChatActivity();
+            Log.d(TAG, "isSelectedDeviceIsReachable: Device is REACHABLE");
+            if (presenter.getSelectedDevice() != null) {
+                Log.d(TAG, "isSelectedDeviceIsReachable: Selected device is GOOD");
+                presenter.getConnectionService().startClient(presenter.getSelectedDevice());
+            } else {
+                Log.e(TAG, "isSelectedDeviceIsReachable: Selected device is NULL");
+            }
+
         } else {
             showToast(null, R.string.device_not_reachable);
         }
+        Log.d(TAG, "isSelectedDeviceIsReachable: end");
     }
 
     @Override

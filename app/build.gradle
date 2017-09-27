@@ -30,11 +30,9 @@ android {
         buildConfigField "String", "NUMBER_OF_PAIRED_DEVICES", '"paired_devices"'
         buildConfigField "String", "NUMBER_OF_DISCOVERED_DEVICES", '"discovered_devices"'
         buildConfigField "String", "IS_SEARCH_FOR_CHAT", '"search_for_chat"'
-        buildConfigField "int", "STATE_NONE", "-1"
-        buildConfigField "int", "STATE_DISCONNECTED", "0"
-        buildConfigField "int", "STATE_CONNECTING", "1"
-        buildConfigField "int", "STATE_CONNECTED", "2"
-        buildConfigField "int", "STATE_LISTENING", "3"
+        buildConfigField "int", "CONNECTED_SUCCESSFULLY", "1"
+        buildConfigField "int", "CONNECTION_FAILED", "-1"
+        buildConfigField "String", "SELECTED_DEVICE", '"selected_device"'
     }
 
     dataBinding {

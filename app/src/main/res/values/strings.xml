@@ -17,4 +17,6 @@
     <string name="already_pair_msg">Already paired with this device</string>
     <string name="title_activity_communication">Communication</string>
     <string name="device_not_reachable">This device is not reachable</string>
+    <string name="enter_message">Enter your message</string>
+    <string name="send_message">Send</string>
 </resources>
