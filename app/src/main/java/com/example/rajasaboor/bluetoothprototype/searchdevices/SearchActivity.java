@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.rajasaboor.bluetoothprototype.BluetoothApplication;
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.communication.BluetoothConnectionService;
@@ -63,7 +64,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
 
         if ((presenter.getConnectionService() == null) && (BluetoothAdapter.getDefaultAdapter().isEnabled())) {
             Log.e(TAG, "onResume: Setting up the connection service");
-            presenter.setConnectionService(new BluetoothConnectionService(presenter.getHandler()));
+            presenter.setConnectionService(((BluetoothApplication) getApplication()).getService());
         }
 
         Log.d(TAG, "onResume: end");
@@ -90,8 +91,8 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
 
         if ((presenter.getConnectionService() != null) && (presenter.isDeviceBluetoothIsTurnedOn())) {
             Log.e(TAG, "onPause: Calling the Connection Service Cancel");
-            presenter.getConnectionService().cancel();
-            presenter.setConnectionService(null);
+//            presenter.getConnectionService().cancel();
+//            presenter.setConnectionService(null);
 
         }
         Log.d(TAG, "onPause: end");

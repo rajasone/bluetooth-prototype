@@ -342,6 +342,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
             if (presenter.getSelectedDevice() != null) {
                 Log.d(TAG, "isSelectedDeviceIsReachable: Selected device is GOOD");
                 presenter.getConnectionService().startClient(presenter.getSelectedDevice());
+                startChatActivity();
             } else {
                 Log.e(TAG, "isSelectedDeviceIsReachable: Selected device is NULL");
             }

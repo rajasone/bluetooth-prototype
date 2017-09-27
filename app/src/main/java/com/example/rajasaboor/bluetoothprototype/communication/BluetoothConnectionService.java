@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelUuid;
 import android.util.Log;
@@ -18,6 +19,7 @@ import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.UUID;
 
@@ -25,7 +27,7 @@ import java.util.UUID;
  * Created by User on 12/21/2016.
  */
 
-public class BluetoothConnectionService {
+public class BluetoothConnectionService  {
     private static final String TAG = BluetoothConnectionService.class.getSimpleName();
     private AcceptThread mInsecureAcceptThread;
 
@@ -33,6 +35,10 @@ public class BluetoothConnectionService {
     private BluetoothDevice mmDevice;
     private ConnectedThread mConnectedThread;
     private Handler handler;
+
+    public BluetoothConnectionService() {
+        this(new Handler(Looper.getMainLooper()));
+    }
 
     public BluetoothConnectionService(Handler handler) {
         this.handler = handler;
