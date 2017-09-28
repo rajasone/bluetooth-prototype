@@ -8,9 +8,6 @@
             name="device"
             type="android.bluetooth.BluetoothDevice" />
 
-        <variable
-            name="deviceType"
-            type="Integer" />
     </data>
 
     <android.support.constraint.ConstraintLayout xmlns:tools="http://schemas.android.com/tools"
@@ -31,10 +28,10 @@
             android:layout_marginStart="4dp"
             android:layout_marginTop="4dp"
             android:contentDescription="@string/action_settings"
+            app:identifyAndSetDeviceIcon="@{device}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:setImageResource="@{deviceType}"
             app:srcCompat="@drawable/phone_icon" />
 
         <TextView

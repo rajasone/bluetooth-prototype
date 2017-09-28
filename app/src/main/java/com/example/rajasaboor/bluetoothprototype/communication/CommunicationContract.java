@@ -1,5 +1,6 @@
 package com.example.rajasaboor.bluetoothprototype.communication;
 
+import android.app.Application;
 import android.os.Handler;
 import android.view.View;
 
@@ -9,23 +10,13 @@ import android.view.View;
 
 public interface CommunicationContract {
     interface ActivityView {
-
+        Application getApplicationInstance();
     }
 
     interface FragmentView {
     }
 
     interface Presenter {
-        BluetoothConnectionService getConnectionService();
-
-        void setConnectionService(BluetoothConnectionService connectionService);
-
-        Handler getHandler();
-
-        void setHandler(Handler handler);
-
-        void defineHandler();
-
         void sendMessage(String message);
 
     }

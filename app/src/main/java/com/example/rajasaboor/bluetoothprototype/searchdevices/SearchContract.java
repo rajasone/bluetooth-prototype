@@ -1,5 +1,6 @@
 package com.example.rajasaboor.bluetoothprototype.searchdevices;
 
+import android.app.Application;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
@@ -32,6 +33,8 @@ public interface SearchContract {
         void unregisterPairBroadcast();
 
         void registerPairBroadcast();
+
+        Application getApplicationInstance();
     }
 
     interface FragmentView extends View.OnClickListener, CompoundButton.OnCheckedChangeListener, PairedDevicesAdapter.OnRecyclerViewTapped {
@@ -130,13 +133,7 @@ public interface SearchContract {
 
         void setSelectedDevice(BluetoothDevice selectedDevice);
 
-        BluetoothConnectionService getConnectionService();
-
-        void setConnectionService(BluetoothConnectionService connectionService);
-
         Handler getHandler();
-
-        void setHandler(Handler handler);
 
         void defineHandler();
     }

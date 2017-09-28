@@ -11,12 +11,14 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 
+import com.example.rajasaboor.bluetoothprototype.BluetoothApplication;
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.communication.BluetoothConnectionService;
@@ -46,9 +48,6 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     private boolean isDeviceDiscoveryForChatActivity;
     private BluetoothDevice selectedDevice;
-
-    private BluetoothConnectionService connectionService;
-    private Handler handler;
 
 
     SearchPresenter(SearchContract.ActivityView activityView, SearchContract.FragmentView fragmentView) {
@@ -129,7 +128,8 @@ public class SearchPresenter implements SearchContract.Presenter {
                             Log.d(TAG, "onReceive: ON");
                             fragmentView.showAvailableDeviceInRecyclerView(getPairedDevices(), false);
                             fragmentView.updateListSize(getPairedDevices().size(), true);
-                            setConnectionService(new BluetoothConnectionService(getHandler()));
+                            ((BluetoothApplication) activityView.getApplicationInstance()).startService();
+                            defineHandler();
                             break;
                     }
                 }
@@ -155,7 +155,6 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void setDiscoveryReceiver(BroadcastReceiver receiver) {
         this.bluetoothDiscoveryReceiver = receiver;
-        Log.e(TAG, "setDiscoveryReceiver: Make broadcast NULL");
     }
 
     @Override
@@ -325,43 +324,32 @@ public class SearchPresenter implements SearchContract.Presenter {
 
 
     @Override
-    public BluetoothConnectionService getConnectionService() {
-        return connectionService;
-    }
-
-    @Override
-    public void setConnectionService(BluetoothConnectionService connectionService) {
-        this.connectionService = connectionService;
-    }
-
-    @Override
     public Handler getHandler() {
-        return handler;
-    }
-
-    @Override
-    public void setHandler(Handler handler) {
-        this.handler = handler;
+        return ((BluetoothApplication) activityView.getApplicationInstance()).getService().getHandler();
     }
 
     @Override
     public void defineHandler() {
-        handler = new Handler(new Handler.Callback() {
+        Log.d(TAG, "defineHandler: start");
+        if (((BluetoothApplication) activityView.getApplicationInstance()).getService() == null) {
+            return;
+        }
+
+
+        ((BluetoothApplication) activityView.getApplicationInstance()).getService().setHandler(new Handler(Looper.getMainLooper()) {
             @Override
-            public boolean handleMessage(Message message) {
+            public void handleMessage(Message message) {
+                Log.d(TAG, "handleMessage: MEssage arg 1 ---> " + message.arg1);
                 if (message.arg1 == BuildConfig.CONNECTED_SUCCESSFULLY) {
-                    fragmentView.showToast("Connected with " + (((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), BuildConfig.NO_RESOURCE);
+                    fragmentView.showToast((((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), R.string.connected_with);
                     fragmentView.startChatActivity();
                 } else {
                     if (message.obj != null) {
-                        fragmentView.showToast("Failed to connect with " + (((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), BuildConfig.NO_RESOURCE);
+                        fragmentView.showToast((((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), R.string.failed_to_connect);
                     }
-//                    else {
-//                        fragmentView.showToast("Failed to connect", BuildConfig.NO_RESOURCE);
-//                    }
                 }
-                return true;
             }
         });
+        Log.d(TAG, "defineHandler: end");
     }
 }

@@ -1,5 +1,6 @@
 package com.example.rajasaboor.bluetoothprototype.communication;
 
+import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -38,16 +39,9 @@ public class CommunicationActivity extends AppCompatActivity implements Communic
         Log.d(TAG, "onCreate: end");
     }
 
+
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume: start");
-
-        if ((presenter.getConnectionService()) == null && (BluetoothAdapter.getDefaultAdapter().isEnabled())) {
-            Log.e(TAG, "onResume: Enabling the Connection Service");
-            presenter.setConnectionService(((BluetoothApplication) getApplication()).getService());
-        }
-        Log.d(TAG, "onResume: end");
+    public Application getApplicationInstance() {
+        return getApplication();
     }
-
 }

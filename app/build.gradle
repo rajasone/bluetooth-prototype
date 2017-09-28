@@ -33,6 +33,7 @@ android {
         buildConfigField "int", "CONNECTED_SUCCESSFULLY", "1"
         buildConfigField "int", "CONNECTION_FAILED", "-1"
         buildConfigField "String", "SELECTED_DEVICE", '"selected_device"'
+        buildConfigField "String", "PAIRED_DEVICES", '"paired_devices"'
     }
 
     dataBinding {

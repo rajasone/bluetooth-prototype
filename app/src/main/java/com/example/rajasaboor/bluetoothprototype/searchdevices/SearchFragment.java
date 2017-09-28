@@ -17,6 +17,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -25,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import com.example.rajasaboor.bluetoothprototype.BluetoothApplication;
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.adapter.PairedDevicesAdapter;
@@ -292,11 +294,12 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     @Override
     public void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped, View view) {
         Log.d(TAG, "onRecyclerViewTapped: start");
-        Log.d(TAG, "onRecyclerViewTapped: Paired Adapter --->" + isPairedAdapter);
-        Log.d(TAG, "onRecyclerViewTapped: Setting Adapter --->" + isSettingsTapped);
 
+        if (position == RecyclerView.NO_POSITION) {
+            Log.e(TAG, "onRecyclerViewTapped: Something went wrong with the Position current position is ===> " + position);
+            return;
+        }
         if ((!isPairedAdapter) && (!isSettingsTapped)) {
-            Log.d(TAG, "onRecyclerViewTapped: in If");
             if (presenter.getPairedDevices().contains(presenter.getDiscoveryDevicesList().get(position))) {
                 showToast(null, R.string.already_pair_msg);
             } else {
@@ -310,7 +313,6 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         } else if ((isPairedAdapter) && (isSettingsTapped) && (view != null)) {
             showPopUpMenu(presenter.getPairedDevices().get(position), view);
         } else if ((isPairedAdapter) && (!isSettingsTapped) && (view == null)) {
-            Log.d(TAG, "onRecyclerViewTapped: Tap on Adapter");
             presenter.setSelectedDevice(presenter.getPairedDevices().get(position));
             if (isDeviceHaveBluetoothAndPermissionGranted()) {
                 checkIsDeviceReachAble();
@@ -338,11 +340,8 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     public void isSelectedDeviceIsReachable() {
         Log.d(TAG, "isSelectedDeviceIsReachable: start");
         if (presenter.getDiscoveryDevicesList().contains(presenter.getSelectedDevice())) {
-            Log.d(TAG, "isSelectedDeviceIsReachable: Device is REACHABLE");
             if (presenter.getSelectedDevice() != null) {
-                Log.d(TAG, "isSelectedDeviceIsReachable: Selected device is GOOD");
-                presenter.getConnectionService().startClient(presenter.getSelectedDevice());
-                startChatActivity();
+                ((BluetoothApplication) getActivity().getApplication()).getService().startClient(presenter.getSelectedDevice());
             } else {
                 Log.e(TAG, "isSelectedDeviceIsReachable: Selected device is NULL");
             }

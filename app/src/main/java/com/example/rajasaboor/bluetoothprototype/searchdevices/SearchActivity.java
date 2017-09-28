@@ -1,5 +1,6 @@
 package com.example.rajasaboor.bluetoothprototype.searchdevices;
 
+import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.IntentFilter;
@@ -62,9 +63,9 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
             presenter.registerDeviceDiscoveryBroadcast();
         }
 
-        if ((presenter.getConnectionService() == null) && (BluetoothAdapter.getDefaultAdapter().isEnabled())) {
+        if (((BluetoothApplication) getApplicationInstance()).getService() == null && BluetoothAdapter.getDefaultAdapter().isEnabled()) {
             Log.e(TAG, "onResume: Setting up the connection service");
-            presenter.setConnectionService(((BluetoothApplication) getApplication()).getService());
+            ((BluetoothApplication) getApplicationInstance()).startService();
         }
 
         Log.d(TAG, "onResume: end");
@@ -88,13 +89,6 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         super.onPause();
         unregisterBluetoothDiscoveryBroadcast();
         unregisterBluetoothEnableBroadcast();
-
-        if ((presenter.getConnectionService() != null) && (presenter.isDeviceBluetoothIsTurnedOn())) {
-            Log.e(TAG, "onPause: Calling the Connection Service Cancel");
-//            presenter.getConnectionService().cancel();
-//            presenter.setConnectionService(null);
-
-        }
         Log.d(TAG, "onPause: end");
     }
 
@@ -176,6 +170,11 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     public void registerPairBroadcast() {
         IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         registerReceiver(presenter.getPairBroadcast(), intentFilter);
+    }
+
+    @Override
+    public Application getApplicationInstance() {
+        return getApplication();
     }
 
     @Override

@@ -27,7 +27,7 @@ import java.util.UUID;
  * Created by User on 12/21/2016.
  */
 
-public class BluetoothConnectionService  {
+public class BluetoothConnectionService {
     private static final String TAG = BluetoothConnectionService.class.getSimpleName();
     private AcceptThread mInsecureAcceptThread;
 
@@ -36,12 +36,16 @@ public class BluetoothConnectionService  {
     private ConnectedThread mConnectedThread;
     private Handler handler;
 
-    public BluetoothConnectionService() {
-        this(new Handler(Looper.getMainLooper()));
+
+    public void setHandler(Handler handler) {
+        this.handler = handler;
     }
 
-    public BluetoothConnectionService(Handler handler) {
-        this.handler = handler;
+    public Handler getHandler() {
+        return handler;
+    }
+
+    public BluetoothConnectionService() {
         start();
     }
 
@@ -116,13 +120,18 @@ public class BluetoothConnectionService  {
                 }
             }
 
-            handler.sendMessage(message);
+            Log.e(TAG, "run: Sending the message");
+            try {
+                handler.sendMessage(message);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
 
             //// TODO: 9/27/2017 start communicating
             //talk about this is in the 3rd
             if (socket != null) {
                 connected(socket, mmDevice);
-                mConnectedThread.write("Hello from the server".getBytes());
+//                mConnectedThread.write("Hello from the server".getBytes());
             }
 
             Log.i(TAG, "END mAcceptThread ");
@@ -193,12 +202,16 @@ public class BluetoothConnectionService  {
                 setMessage(message, mmSocket.getRemoteDevice(), BuildConfig.CONNECTION_FAILED);
                 Log.d(TAG, "run: ConnectThread: Could not connect to UUID: " + BuildConfig.UUID);
             }
-            handler.sendMessage(message);
-
+            Log.e(TAG, "run: Sending the message");
+            try {
+                handler.sendMessage(message);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
             // TODO: 9/27/2017 uncomment this while starting the communication
             //will talk about this in the 3rd video
             connected(mmSocket, mmDevice);
-            mConnectedThread.write("hello from the client".getBytes());
+//            mConnectedThread.write("hello from the client".getBytes());
         }
 
         public void cancel() {
