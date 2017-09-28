@@ -34,6 +34,9 @@ android {
         buildConfigField "int", "CONNECTION_FAILED", "-1"
         buildConfigField "String", "SELECTED_DEVICE", '"selected_device"'
         buildConfigField "String", "PAIRED_DEVICES", '"paired_devices"'
+        buildConfigField "String", "CONVERSATION_LIST", '"conversation"'
+        buildConfigField "int", "MESSAGE_SENT", "0"
+        buildConfigField "int", "MESSAGE_RECEIVED", "1"
     }
 
     dataBinding {

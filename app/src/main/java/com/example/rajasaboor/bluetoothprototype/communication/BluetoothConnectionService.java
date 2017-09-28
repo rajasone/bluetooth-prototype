@@ -35,6 +35,7 @@ public class BluetoothConnectionService {
     private BluetoothDevice mmDevice;
     private ConnectedThread mConnectedThread;
     private Handler handler;
+    private MessageListener messageListener;
 
 
     public void setHandler(Handler handler) {
@@ -123,7 +124,7 @@ public class BluetoothConnectionService {
             Log.e(TAG, "run: Sending the message");
             try {
                 handler.sendMessage(message);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -205,7 +206,7 @@ public class BluetoothConnectionService {
             Log.e(TAG, "run: Sending the message");
             try {
                 handler.sendMessage(message);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             // TODO: 9/27/2017 uncomment this while starting the communication
@@ -292,8 +293,22 @@ public class BluetoothConnectionService {
                 // Read from the InputStream
                 try {
                     bytes = mmInStream.read(buffer);
+                    Log.d(TAG, "run: Read msg ===> " + bytes);
                     String incomingMessage = new String(buffer, 0, bytes);
                     Log.d(TAG, "InputStream: " + incomingMessage);
+
+                    if ((messageListener != null) && (handler != null)) {
+                        Log.d(TAG, "run: Message received ====> " + incomingMessage);
+                        Log.d(TAG, "run: Message received length ====> " + incomingMessage);
+                        Message message = Message.obtain();
+                        message.what = BuildConfig.MESSAGE_RECEIVED;
+                        message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(null, incomingMessage);
+                        handler.sendMessage(message);
+                        Log.d(TAG, "run: Message send to the handler successfully");
+//                        messageListener.onMessageReceived(new String(buffer, 0, buffer.length));
+                    } else {
+                        Log.e(TAG, "run: Message Listener or Handler is NULL");
+                    }
                 } catch (IOException e) {
                     Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage());
                     break;
@@ -307,6 +322,24 @@ public class BluetoothConnectionService {
             Log.d(TAG, "write: Writing to outputstream: " + text);
             try {
                 mmOutStream.write(bytes);
+
+//                if (messageListener != null) {
+//                    Log.d(TAG, "write: Message sent ====> " + new String(bytes));
+//                    messageListener.onMessageSent(new String(bytes));
+//                }
+
+                if ((messageListener != null) && (handler != null)) {
+                    Log.d(TAG, "write: Message sent ====> " + new String(bytes, 0, bytes.length));
+                    Log.d(TAG, "write: Message sent length ====> " + new String(bytes, 0, bytes.length).length());
+                    Message message = Message.obtain();
+                    message.what = BuildConfig.MESSAGE_SENT;
+                    message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(new String(bytes, 0, bytes.length), null);
+                    handler.sendMessage(message);
+                    Log.d(TAG, "run: Message send to the handler successfully");
+//                        messageListener.onMessageReceived(new String(buffer, 0, buffer.length));
+                } else {
+                    Log.e(TAG, "run: Message Listener or Handler is NULL");
+                }
             } catch (IOException e) {
                 Log.e(TAG, "write: Error writing to output stream. " + e.getMessage());
             }
@@ -343,6 +376,20 @@ public class BluetoothConnectionService {
         Log.d(TAG, "write: Write Called.");
         //perform the write
         mConnectedThread.write(out);
+
     }
 
+    interface MessageListener {
+        void onMessageReceived(String message);
+
+        void onMessageSent(String message);
+    }
+
+    public MessageListener getMessageListener() {
+        return messageListener;
+    }
+
+    public void setMessageListener(MessageListener messageListener) {
+        this.messageListener = messageListener;
+    }
 }

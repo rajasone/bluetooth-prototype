@@ -20,5 +20,6 @@
     <string name="enter_message">Enter your message</string>
     <string name="send_message">Send</string>
     <string name="connected_with">Connected with %s</string>
-    <string name="failed_to_connect">Failed to connect with</string>
+    <string name="failed_to_connect">Failed to connect with %s</string>
+    <string name="enter_valid_input">enter valid input</string>
 </resources>

@@ -1,25 +1,33 @@
 package com.example.rajasaboor.bluetoothprototype.communication;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.example.rajasaboor.bluetoothprototype.BluetoothApplication;
+import com.example.rajasaboor.bluetoothprototype.BuildConfig;
+import com.example.rajasaboor.bluetoothprototype.model.Message;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by rajaSaboor on 9/27/2017.
  */
 
-public class CommunicationPresenter implements CommunicationContract.Presenter {
+public class CommunicationPresenter implements CommunicationContract.Presenter, BluetoothConnectionService.MessageListener {
     private static final String TAG = CommunicationFragment.class.getSimpleName();
     private CommunicationContract.FragmentView fragmentView;
     private CommunicationContract.ActivityView activityView;
     private BluetoothConnectionService bluetoothConnectionService;
+    private List<Message> messageList = new ArrayList<>();
 
     public CommunicationPresenter(CommunicationContract.FragmentView fragmentView, CommunicationContract.ActivityView activityView) {
         this.fragmentView = fragmentView;
         this.activityView = activityView;
-
         bluetoothConnectionService = ((BluetoothApplication) activityView.getApplicationInstance()).getService();
-
+        bluetoothConnectionService.setMessageListener(this);
+        defineConversationHandler();
     }
 
     @Override
@@ -28,4 +36,55 @@ public class CommunicationPresenter implements CommunicationContract.Presenter {
         bluetoothConnectionService.write(message.getBytes());
     }
 
+
+    @Override
+    public List<Message> getMessageList() {
+        return messageList;
+    }
+
+    @Override
+    public void setMessageList(List<Message> messageList) {
+        this.messageList = messageList;
+    }
+
+    @Override
+    public void defineConversationHandler() {
+        Log.d(TAG, "defineConversationHandler: start");
+        if (((BluetoothApplication) activityView.getApplicationInstance()).getService().getHandler() != null) {
+            Log.d(TAG, "defineConversationHandler: Handler is not NULL | Setting it to the NULL");
+            ((BluetoothApplication) activityView.getApplicationInstance()).getService().setHandler(null);
+        } else {
+            Log.d(TAG, "defineConversationHandler: Handler is already NULL");
+        }
+        ((BluetoothApplication) activityView.getApplicationInstance()).getService().setHandler(new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(android.os.Message msg) {
+                int messageStatus = msg.what;
+                fragmentView.resetChatEditText();
+                Log.d(TAG, "handleMessage: Message status ====> " + messageStatus);
+                Message message = (Message) msg.obj;
+                switch (messageStatus) {
+                    case BuildConfig.MESSAGE_SENT:
+                        onMessageSent(message.getMyMessage());
+                        break;
+                    case BuildConfig.MESSAGE_RECEIVED:
+                        onMessageReceived(message.getSenderMessage());
+                        break;
+                }
+            }
+        });
+        Log.d(TAG, "defineConversationHandler: end");
+    }
+
+    @Override
+    public void onMessageReceived(String message) {
+        messageList.add(new Message(null, message.trim()));
+        fragmentView.updateConversationAdapter(messageList);
+    }
+
+    @Override
+    public void onMessageSent(String message) {
+        messageList.add(new Message(message.trim(), null));
+        fragmentView.updateConversationAdapter(messageList);
+    }
 }

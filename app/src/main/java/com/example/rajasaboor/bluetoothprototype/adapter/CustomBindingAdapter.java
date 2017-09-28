@@ -3,17 +3,19 @@ package com.example.rajasaboor.bluetoothprototype.adapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.databinding.BindingAdapter;
+import android.text.TextUtils;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.example.rajasaboor.bluetoothprototype.R;
+import com.example.rajasaboor.bluetoothprototype.model.Message;
 
 /**
  * Created by rajaSaboor on 9/22/2017.
  */
 
 public class CustomBindingAdapter {
-    @BindingAdapter("app:setImageResource")
-    public static void setUpImageResource(ImageView imageView, int imageResource) {
+    private static void setUpImageResource(ImageView imageView, int imageResource) {
         imageView.setImageResource(imageResource);
     }
 
@@ -42,5 +44,12 @@ public class CustomBindingAdapter {
 
         }
         setUpImageResource(imageView, imageResource);
+    }
+
+    @BindingAdapter("app:viewVisibility")
+    public static void setVisibilityOfView(View view, String message) {
+        if (TextUtils.isEmpty(message) || message.length() == 0) {
+            view.setVisibility(View.GONE);
+        }
     }
 }
