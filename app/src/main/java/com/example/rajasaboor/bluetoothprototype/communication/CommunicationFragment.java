@@ -1,10 +1,11 @@
 package com.example.rajasaboor.bluetoothprototype.communication;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
-import android.support.design.internal.NavigationMenuPresenter;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
@@ -14,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
+import com.example.rajasaboor.bluetoothprototype.PreviewActivity;
+import com.example.rajasaboor.bluetoothprototype.PreviewFragment;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.adapter.ConversationAdapter;
 import com.example.rajasaboor.bluetoothprototype.databinding.CommunicationFragmentBinding;
@@ -120,5 +123,29 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
     @Override
     public void resetChatEditText() {
         communicationFragmentBinding.sendMessageEditText.setText(null);
+    }
+
+    @Override
+    public void openImagesIntent() {
+        Intent imagesIntent = new Intent();
+        imagesIntent.setType("image/*");
+        imagesIntent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(imagesIntent, BuildConfig.IMAGES_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult: start");
+        switch (requestCode) {
+            case BuildConfig.IMAGES_REQUEST_CODE:
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    Log.d(TAG, "onActivityResult: Image Uri ===> " + data.getData());
+                    Intent intent = new Intent(getContext(), PreviewActivity.class);
+                    intent.putExtra(BuildConfig.SELECTED_IMAGE_URI, data.getData().toString());
+                    startActivity(intent);
+                }
+                break;
+        }
+        Log.d(TAG, "onActivityResult: end");
     }
 }

@@ -62,8 +62,14 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
             @Override
             public void handleMessage(android.os.Message msg) {
                 int messageStatus = msg.what;
+                Message message = null;
                 Log.d(TAG, "handleMessage: Message status ====> " + messageStatus);
-                Message message = (Message) msg.obj;
+                try {
+                    message = (Message) msg.obj;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return;
+                }
                 switch (messageStatus) {
                     case BuildConfig.MESSAGE_SENT:
                         fragmentView.resetChatEditText();

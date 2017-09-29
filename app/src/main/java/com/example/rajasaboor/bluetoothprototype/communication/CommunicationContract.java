@@ -23,6 +23,8 @@ interface CommunicationContract {
         void showToast(String message, int messageID);
 
         void resetChatEditText();
+
+        void openImagesIntent();
     }
 
     interface Presenter {

@@ -23,4 +23,6 @@
     <string name="failed_to_connect">Failed to connect with %s</string>
     <string name="enter_valid_input">enter valid input</string>
     <string name="failed_to_send_message">Message sending failed</string>
+    <string name="attach_image">Attach</string>
+    <string name="title_activity_preview">PreviewActivity</string>
 </resources>

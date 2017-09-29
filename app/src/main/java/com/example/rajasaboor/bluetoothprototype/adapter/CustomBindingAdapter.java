@@ -24,7 +24,7 @@ public class CustomBindingAdapter {
         imageView.setImageResource(imageResource);
     }
 
-    @BindingAdapter("app:identifyAndSetDeviceIcon")
+    @BindingAdapter("identifyAndSetDeviceIcon")
     public static void identifyAndSetDeviceIcon(ImageView imageView, BluetoothDevice device) {
         int imageResource = R.drawable.bluetooth_icon;
 
@@ -51,14 +51,14 @@ public class CustomBindingAdapter {
         setUpImageResource(imageView, imageResource);
     }
 
-    @BindingAdapter("app:viewVisibility")
+    @BindingAdapter("viewVisibility")
     public static void setVisibilityOfView(View view, String message) {
         if (TextUtils.isEmpty(message) || message.length() == 0) {
             view.setVisibility(View.GONE);
         }
     }
 
-    @BindingAdapter("app:setTime")
+    @BindingAdapter("setTime")
     public static void setTime(TextView view, long time) {
         view.setText(new SimpleDateFormat("h:m a", Locale.US).format(new Date(time)));
     }

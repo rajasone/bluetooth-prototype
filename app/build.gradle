@@ -35,9 +35,11 @@ android {
         buildConfigField "String", "SELECTED_DEVICE", '"selected_device"'
         buildConfigField "String", "PAIRED_DEVICES", '"paired_devices"'
         buildConfigField "String", "CONVERSATION_LIST", '"conversation"'
+        buildConfigField "String", "SELECTED_IMAGE_URI", '"image"'
         buildConfigField "int", "MESSAGE_SENT", "0"
         buildConfigField "int", "MESSAGE_RECEIVED", "1"
         buildConfigField "int", "FAILED_TO_SEND_MESSAGE", "-1"
+        buildConfigField "int", "IMAGES_REQUEST_CODE", "1009"
     }
 
     dataBinding {
@@ -56,8 +58,10 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:design:26.+'
+    compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.android.support:support-v4:26.+'
     testCompile 'junit:junit:4.12'
+
 }
