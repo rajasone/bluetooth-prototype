@@ -12,7 +12,7 @@ import java.util.List;
  * Created by rajaSaboor on 9/27/2017.
  */
 
-public interface CommunicationContract {
+interface CommunicationContract {
     interface ActivityView {
         Application getApplicationInstance();
     }
@@ -33,5 +33,7 @@ public interface CommunicationContract {
         void setMessageList(List<Message> messageList);
 
         void defineConversationHandler();
+
+        BluetoothConnectionService getBluetoothConnectionService();
     }
 }

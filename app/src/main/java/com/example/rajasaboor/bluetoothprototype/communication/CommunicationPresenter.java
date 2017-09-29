@@ -2,10 +2,12 @@ package com.example.rajasaboor.bluetoothprototype.communication;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.example.rajasaboor.bluetoothprototype.BluetoothApplication;
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
+import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.model.Message;
 
 import java.util.ArrayList;
@@ -60,31 +62,41 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
             @Override
             public void handleMessage(android.os.Message msg) {
                 int messageStatus = msg.what;
-                fragmentView.resetChatEditText();
                 Log.d(TAG, "handleMessage: Message status ====> " + messageStatus);
                 Message message = (Message) msg.obj;
                 switch (messageStatus) {
                     case BuildConfig.MESSAGE_SENT:
+                        fragmentView.resetChatEditText();
                         onMessageSent(message.getMyMessage());
                         break;
                     case BuildConfig.MESSAGE_RECEIVED:
+                        fragmentView.resetChatEditText();
                         onMessageReceived(message.getSenderMessage());
+                        break;
+                    case BuildConfig.FAILED_TO_SEND_MESSAGE:
+                        fragmentView.showToast(null, R.string.failed_to_send_message);
                         break;
                 }
             }
         });
+
         Log.d(TAG, "defineConversationHandler: end");
     }
 
     @Override
+    public BluetoothConnectionService getBluetoothConnectionService() {
+        return ((BluetoothApplication) activityView.getApplicationInstance()).getService();
+    }
+
+    @Override
     public void onMessageReceived(String message) {
-        messageList.add(new Message(null, message.trim()));
+        messageList.add(new Message(null, message.trim(), System.currentTimeMillis()));
         fragmentView.updateConversationAdapter(messageList);
     }
 
     @Override
     public void onMessageSent(String message) {
-        messageList.add(new Message(message.trim(), null));
+        messageList.add(new Message(message.trim(), null, System.currentTimeMillis()));
         fragmentView.updateConversationAdapter(messageList);
     }
 }

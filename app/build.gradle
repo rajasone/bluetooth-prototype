@@ -37,6 +37,7 @@ android {
         buildConfigField "String", "CONVERSATION_LIST", '"conversation"'
         buildConfigField "int", "MESSAGE_SENT", "0"
         buildConfigField "int", "MESSAGE_RECEIVED", "1"
+        buildConfigField "int", "FAILED_TO_SEND_MESSAGE", "-1"
     }
 
     dataBinding {

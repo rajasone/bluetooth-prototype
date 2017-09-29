@@ -6,9 +6,14 @@ import android.databinding.BindingAdapter;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.model.Message;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by rajaSaboor on 9/22/2017.
@@ -51,5 +56,10 @@ public class CustomBindingAdapter {
         if (TextUtils.isEmpty(message) || message.length() == 0) {
             view.setVisibility(View.GONE);
         }
+    }
+
+    @BindingAdapter("app:setTime")
+    public static void setTime(TextView view, long time) {
+        view.setText(new SimpleDateFormat("h:m a", Locale.US).format(new Date(time)));
     }
 }
