@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -16,6 +17,7 @@ import android.util.Log;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.nio.Buffer;
 import java.nio.charset.Charset;
 import java.util.UUID;
 
@@ -250,10 +253,8 @@ public class BluetoothConnectionService {
      **/
     private class ConnectedThread extends Thread {
         private final BluetoothSocket mmSocket;
-        //        private final InputStream mmInStream;
-//        private final OutputStream mmOutStream;
-        private final InputStreamReader mmInStream;
-        private final OutputStreamWriter mmOutStream;
+        private InputStream mmInStream;
+        private OutputStream mmOutStream;
 
         public ConnectedThread(BluetoothSocket socket) {
             Log.d(TAG, "ConnectedThread: Starting.");
@@ -265,68 +266,38 @@ public class BluetoothConnectionService {
             try {
                 tmpIn = mmSocket.getInputStream();
                 tmpOut = mmSocket.getOutputStream();
+
+                mmInStream = tmpIn;
+                mmOutStream = tmpOut;
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
-            mmInStream = new InputStreamReader(tmpIn);
-            mmOutStream = new OutputStreamWriter(tmpOut);
         }
 
         public void run() {
-            Log.d(TAG, "run: start");
-            byte[] buffer = new byte[1024];  // buffer store for the stream
-
-            int bytes; // bytes returned from read()
-
             // Keep listening to the InputStream until an exception occurs
             while (true) {
-                Log.d(TAG, "run: inside the loop");
                 // Read from the InputStream
                 try {
-
-                    //bytes = mmInStream.read(buffer);
-                    Log.d(TAG, "run: Inside the TRY");
-                    StringBuffer stringBuffer = new StringBuffer();
-                    int temp = 0;
-
-                    // Log.d(TAG, "run: SIZE ====> " + mmInStream.read());
-
-                    if (mmInStream == null) {
-                        Log.d(TAG, "run: input stream is NULL");
-                    } else {
-                        Log.d(TAG, "run: Input stream is GOOd");
+                    int read = 0;
+                    StringBuilder readBuffer = new StringBuilder();
+                    while ((read = mmInStream.read()) != -1) {
+                        readBuffer.append(((char) read));
+                        if (mmInStream.available() == 0) {
+                            Log.d(TAG, "run: Available is 0 so breaking the loop");
+                            break;
+                        }
                     }
-
-                    BufferedReader reader = new BufferedReader(mmInStream);
-                    String s = reader.readLine();
-                    Log.d(TAG, "run: S ====> " + s);
-
-                    while ((temp = mmInStream.read()) != -1) {
-                        stringBuffer.append(Character.toString(((char) temp)));
-                        Log.d(TAG, "run: Inside the loop ---> " + temp);
-                    }
-                    /*
-                    while (mmInStream.available() != 0) {
-                        bytes = mmInStream.read(buffer);
-                    }
-                    */
-
-                    Log.d(TAG, "run: Read msg ===> " + stringBuffer);
-//                    String incomingMessage = new String(buffer, 0, bytes);
-                    String incomingMessage = stringBuffer.toString();
-                    Log.d(TAG, "InputStream: " + incomingMessage);
-
+                    Log.d(TAG, "run: Read Buffer ====> " + readBuffer);
+                    Log.d(TAG, "run:-------------------------------------------------");
                     if ((messageListener != null) && (handler != null)) {
-                        Log.d(TAG, "run: Message received ====> " + incomingMessage);
-                        Log.d(TAG, "run: Message received length ====> " + incomingMessage);
+                        Log.d(TAG, "run: Message received ====> " + readBuffer);
+                        Log.d(TAG, "run: Message received length ====> " + readBuffer.length());
                         Message message = Message.obtain();
                         message.what = BuildConfig.MESSAGE_RECEIVED;
-                        message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(null, incomingMessage, System.currentTimeMillis());
+                        message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(null, readBuffer.toString(), System.currentTimeMillis(), null);
                         handler.sendMessage(message);
                         Log.d(TAG, "run: Message send to the handler successfully");
-//                        messageListener.onMessageReceived(new String(buffer, 0, buffer.length));
                     } else {
                         Log.e(TAG, "run: Message Listener or Handler is NULL");
                     }
@@ -335,27 +306,23 @@ public class BluetoothConnectionService {
                     break;
                 }
             }
-            Log.d(TAG, "run: end");
         }
 
         //Call this from the main activity to send data to the remote device
-        public void write(byte[] bytes) {
+        public void write(byte[] bytes, Uri imageUri) {
             String text = new String(bytes, Charset.defaultCharset());
             Log.d(TAG, "write: Writing to outputstream: " + text);
             Message message = Message.obtain();
 
             try {
-//                mmOutStream.write(bytes);
-                mmOutStream.write(new String(bytes));
-
+                mmOutStream.write(bytes);
                 if ((messageListener != null) && (handler != null)) {
                     Log.d(TAG, "write: Message sent ====> " + new String(bytes, 0, bytes.length));
                     Log.d(TAG, "write: Message sent length ====> " + new String(bytes, 0, bytes.length).length());
                     message.what = BuildConfig.MESSAGE_SENT;
-                    message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(new String(bytes, 0, bytes.length), null, System.currentTimeMillis());
+                    message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(new String(bytes, 0, bytes.length), null, System.currentTimeMillis(), imageUri);
                     handler.sendMessage(message);
                     Log.d(TAG, "run: Message send to the handler successfully");
-//                        messageListener.onMessageReceived(new String(buffer, 0, buffer.length));
                 } else {
                     Log.e(TAG, "run: Message Listener or Handler is NULL");
                 }
@@ -388,23 +355,23 @@ public class BluetoothConnectionService {
      * Write to the ConnectedThread in an unsynchronized manner
      *
      * @param out The bytes to write
-     * @see ConnectedThread#write(byte[])
+     * @see ConnectedThread#write(byte[], Uri imageUri)
      */
-    public void write(byte[] out) {
+    public void write(byte[] out, Uri imageUri) {
         // Create temporary object
         ConnectedThread r;
 
         // Synchronize a copy of the ConnectedThread
         Log.d(TAG, "write: Write Called.");
         //perform the write
-        mConnectedThread.write(out);
+        mConnectedThread.write(out, imageUri);
 
     }
 
     interface MessageListener {
-        void onMessageReceived(String message);
+        void onMessageReceived(String message, Uri selectedImageUri);
 
-        void onMessageSent(String message);
+        void onMessageSent(String message, Uri selectedImageUri);
     }
 
     public MessageListener getMessageListener() {

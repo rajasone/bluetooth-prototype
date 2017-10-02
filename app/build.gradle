@@ -40,6 +40,7 @@ android {
         buildConfigField "int", "MESSAGE_RECEIVED", "1"
         buildConfigField "int", "FAILED_TO_SEND_MESSAGE", "-1"
         buildConfigField "int", "IMAGES_REQUEST_CODE", "1009"
+        buildConfigField "String", "IS_IMAGE_SELECTED", '"is_image_se"'
     }
 
     dataBinding {
@@ -62,6 +63,7 @@ dependencies {
     compile 'com.android.support:design:26.+'
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support:support-v4:26.+'
+    compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
     testCompile 'junit:junit:4.12'
 
 }

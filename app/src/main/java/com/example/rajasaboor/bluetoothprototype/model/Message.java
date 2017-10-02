@@ -1,5 +1,6 @@
 package com.example.rajasaboor.bluetoothprototype.model;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -12,15 +13,17 @@ public class Message implements Parcelable {
     private String myMessage;
     private String senderMessage;
     private long messageTime;
+    private Uri selectedImageUri;
 
 
     public Message() {
     }
 
-    public Message(String myMessage, String senderMessage, long messageTime) {
+    public Message(String myMessage, String senderMessage, long messageTime, Uri selectedImageUri) {
         this.myMessage = myMessage;
         this.senderMessage = senderMessage;
         this.messageTime = messageTime;
+        this.selectedImageUri = selectedImageUri;
     }
 
     public String getMyMessage() {
@@ -35,6 +38,10 @@ public class Message implements Parcelable {
         return messageTime;
     }
 
+    public Uri getSelectedImageUri() {
+        return selectedImageUri;
+    }
+
 
     @Override
     public int describeContents() {
@@ -46,12 +53,14 @@ public class Message implements Parcelable {
         dest.writeString(this.myMessage);
         dest.writeString(this.senderMessage);
         dest.writeLong(this.messageTime);
+        dest.writeParcelable(this.selectedImageUri, flags);
     }
 
     protected Message(Parcel in) {
         this.myMessage = in.readString();
         this.senderMessage = in.readString();
         this.messageTime = in.readLong();
+        this.selectedImageUri = in.readParcelable(Uri.class.getClassLoader());
     }
 
     public static final Creator<Message> CREATOR = new Creator<Message>() {

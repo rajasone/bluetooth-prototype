@@ -3,8 +3,11 @@ package com.example.rajasaboor.bluetoothprototype.communication;
 import android.app.Activity;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,6 +25,7 @@ import com.example.rajasaboor.bluetoothprototype.adapter.ConversationAdapter;
 import com.example.rajasaboor.bluetoothprototype.databinding.CommunicationFragmentBinding;
 import com.example.rajasaboor.bluetoothprototype.model.Message;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +68,7 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
             case R.id.send_message_button:
                 Log.d(TAG, "onClick: Send button tapped");
                 if (communicationFragmentBinding.sendMessageEditText.getText().toString().trim().length() > 0) {
-                    presenter.sendMessage(communicationFragmentBinding.sendMessageEditText.getText().toString());
+                    presenter.sendMessage(communicationFragmentBinding.sendMessageEditText.getText().toString(), null);
                 } else {
                     showToast(null, R.string.enter_valid_input);
                 }
@@ -123,29 +127,5 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
     @Override
     public void resetChatEditText() {
         communicationFragmentBinding.sendMessageEditText.setText(null);
-    }
-
-    @Override
-    public void openImagesIntent() {
-        Intent imagesIntent = new Intent();
-        imagesIntent.setType("image/*");
-        imagesIntent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(imagesIntent, BuildConfig.IMAGES_REQUEST_CODE);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult: start");
-        switch (requestCode) {
-            case BuildConfig.IMAGES_REQUEST_CODE:
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    Log.d(TAG, "onActivityResult: Image Uri ===> " + data.getData());
-                    Intent intent = new Intent(getContext(), PreviewActivity.class);
-                    intent.putExtra(BuildConfig.SELECTED_IMAGE_URI, data.getData().toString());
-                    startActivity(intent);
-                }
-                break;
-        }
-        Log.d(TAG, "onActivityResult: end");
     }
 }

@@ -1,10 +1,14 @@
 package com.example.rajasaboor.bluetoothprototype.communication;
 
 import android.app.Application;
+import android.content.ContentResolver;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Handler;
 import android.view.View;
 
 import com.example.rajasaboor.bluetoothprototype.model.Message;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 import java.util.List;
 
@@ -15,6 +19,8 @@ import java.util.List;
 interface CommunicationContract {
     interface ActivityView {
         Application getApplicationInstance();
+
+        ContentResolver getContentResolverInstance();
     }
 
     interface FragmentView {
@@ -23,12 +29,10 @@ interface CommunicationContract {
         void showToast(String message, int messageID);
 
         void resetChatEditText();
-
-        void openImagesIntent();
     }
 
     interface Presenter {
-        void sendMessage(String message);
+        void sendMessage(String message, Uri imageUri);
 
         List<Message> getMessageList();
 
@@ -37,5 +41,9 @@ interface CommunicationContract {
         void defineConversationHandler();
 
         BluetoothConnectionService getBluetoothConnectionService();
+
+        byte[] convertBitmapIntoBytesArray(Bitmap bitmap);
+
+        Bitmap getSelectedImageBitmap();
     }
 }

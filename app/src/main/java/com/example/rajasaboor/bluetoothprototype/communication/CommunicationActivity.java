@@ -2,9 +2,10 @@ package com.example.rajasaboor.bluetoothprototype.communication;
 
 import android.app.Activity;
 import android.app.Application;
-import android.bluetooth.BluetoothAdapter;
+import android.content.ContentResolver;
 import android.content.Intent;
-import android.net.Uri;
+import android.graphics.Bitmap;
+import android.graphics.BitmapRegionDecoder;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -12,13 +13,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.example.rajasaboor.bluetoothprototype.BluetoothApplication;
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.PreviewActivity;
 import com.example.rajasaboor.bluetoothprototype.R;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class CommunicationActivity extends AppCompatActivity implements CommunicationContract.ActivityView {
     private static final String TAG = CommunicationActivity.class.getSimpleName();
+    private static final int PREVIEW_ACTIVITY_REQUEST_CODE = 9001;
     private CommunicationContract.Presenter presenter;
     private CommunicationFragment communicationFragment;
 
@@ -56,14 +58,47 @@ public class CommunicationActivity extends AppCompatActivity implements Communic
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_attach_menu:
-                communicationFragment.openImagesIntent();
+                openImagesIntent();
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    public void openImagesIntent() {
+        Intent imagesIntent = new Intent();
+        imagesIntent.setType("image/*");
+        imagesIntent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(imagesIntent, BuildConfig.IMAGES_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        Log.d(TAG, "onActivityResult: start");
+        switch (requestCode) {
+            case BuildConfig.IMAGES_REQUEST_CODE:
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    Log.d(TAG, "onActivityResult: Image Uri ===> " + data.getData());
+                    Intent intent = new Intent(this, PreviewActivity.class);
+                    intent.putExtra(BuildConfig.SELECTED_IMAGE_URI, data.getData().toString());
+                    startActivityForResult(intent, PREVIEW_ACTIVITY_REQUEST_CODE);
+                }
+                break;
+            case PREVIEW_ACTIVITY_REQUEST_CODE:
+                if (resultCode == RESULT_OK && data != null) {
+                    ImageLoader.getInstance().loadImage(data.getData().toString(), ((CommunicationPresenter) presenter));
+                }
+                break;
+        }
+        Log.d(TAG, "onActivityResult: end");
+    }
+
     @Override
     public Application getApplicationInstance() {
         return getApplication();
+    }
+
+    @Override
+    public ContentResolver getContentResolverInstance() {
+        return getContentResolver();
     }
 }

@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothAdapter;
 import android.util.Log;
 
 import com.example.rajasaboor.bluetoothprototype.communication.BluetoothConnectionService;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import static android.content.ContentValues.TAG;
 
@@ -20,6 +22,9 @@ public class BluetoothApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate: start");
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
+			.build();
+        ImageLoader.getInstance().init(config);
         startService();
     }
 
