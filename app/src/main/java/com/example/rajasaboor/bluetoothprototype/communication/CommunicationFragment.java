@@ -108,6 +108,7 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
         if (conversationAdapter != null) {
             Log.d(TAG, "updateConversationAdapter: Adapter is good ! Updating");
             conversationAdapter.updateList(conversationList);
+            communicationFragmentBinding.conversationRecyclerView.scrollToPosition(conversationList.size() - 1);
         } else {
             Log.d(TAG, "updateConversationAdapter: Conversation adapter is NULL ! Not able to update the adapter");
         }

@@ -1,5 +1,6 @@
 package com.example.rajasaboor.bluetoothprototype.model;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -14,16 +15,18 @@ public class Message implements Parcelable {
     private String senderMessage;
     private long messageTime;
     private Uri selectedImageUri;
+    private Bitmap receivedImageBitmap;
 
 
     public Message() {
     }
 
-    public Message(String myMessage, String senderMessage, long messageTime, Uri selectedImageUri) {
+    public Message(String myMessage, String senderMessage, long messageTime, Uri selectedImageUri, Bitmap receivedImageBitmap) {
         this.myMessage = myMessage;
         this.senderMessage = senderMessage;
         this.messageTime = messageTime;
         this.selectedImageUri = selectedImageUri;
+        this.receivedImageBitmap = receivedImageBitmap;
     }
 
     public String getMyMessage() {
@@ -42,6 +45,10 @@ public class Message implements Parcelable {
         return selectedImageUri;
     }
 
+    public Bitmap getReceivedImageBitmap() {
+        return receivedImageBitmap;
+    }
+
 
     @Override
     public int describeContents() {
@@ -54,6 +61,7 @@ public class Message implements Parcelable {
         dest.writeString(this.senderMessage);
         dest.writeLong(this.messageTime);
         dest.writeParcelable(this.selectedImageUri, flags);
+        dest.writeParcelable(this.receivedImageBitmap, flags);
     }
 
     protected Message(Parcel in) {
@@ -61,6 +69,7 @@ public class Message implements Parcelable {
         this.senderMessage = in.readString();
         this.messageTime = in.readLong();
         this.selectedImageUri = in.readParcelable(Uri.class.getClassLoader());
+        this.receivedImageBitmap = in.readParcelable(Bitmap.class.getClassLoader());
     }
 
     public static final Creator<Message> CREATOR = new Creator<Message>() {

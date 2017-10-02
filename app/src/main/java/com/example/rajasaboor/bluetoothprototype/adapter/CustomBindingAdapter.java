@@ -86,13 +86,20 @@ public class CustomBindingAdapter {
     }
 
     @BindingAdapter("showImage")
-    public static void showImage(View view, Uri imageUri) {
+    public static void showImage(View view, Message message) {
         Log.e(TAG, "showImage: start");
-        if (imageUri == null) {
+        if (message.getReceivedImageBitmap() != null) {
+
+            ((ImageView) view).setImageBitmap(message.getReceivedImageBitmap());
+            view.setVisibility(View.VISIBLE);
+            Log.d(TAG, "showImage: image set up successfully");
+            return;
+        }
+        if (message.getSelectedImageUri() == null) {
             ((ImageView) view).setVisibility(GONE);
         } else {
             view.setVisibility(View.VISIBLE);
-            ImageLoader.getInstance().displayImage(imageUri.toString(), ((ImageView) view));
+            ImageLoader.getInstance().displayImage(message.getSelectedImageUri().toString(), ((ImageView) view));
         }
         Log.e(TAG, "showImage: end");
     }

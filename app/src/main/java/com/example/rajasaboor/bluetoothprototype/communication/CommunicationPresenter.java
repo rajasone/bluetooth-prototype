@@ -1,11 +1,13 @@
 package com.example.rajasaboor.bluetoothprototype.communication;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 
@@ -20,6 +22,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,7 +91,7 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
                         break;
                     case BuildConfig.MESSAGE_RECEIVED:
                         fragmentView.resetChatEditText();
-                        onMessageReceived(message.getSenderMessage(), message.getSelectedImageUri());
+                        onMessageReceived(message.getSenderMessage());
                         break;
                     case BuildConfig.FAILED_TO_SEND_MESSAGE:
                         fragmentView.showToast(null, R.string.failed_to_send_message);
@@ -107,22 +110,32 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
 
 
     @Override
-    public byte[] convertBitmapIntoBytesArray(Bitmap bitmap) {
+    public String convertBitmapIntoBytesArray(Bitmap bitmap) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream);
         Log.d(TAG, "convertBitmapIntoBytesArray: Length of the byte array ===> " + outputStream.toByteArray().length);
-        return outputStream.toByteArray();
+        String encodedImage = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT);
+        return encodedImage;
+
     }
 
     @Override
-    public void onMessageReceived(String message, Uri selectedImageUri) {
-        messageList.add(new Message(null, message.trim(), System.currentTimeMillis(), selectedImageUri));
-        fragmentView.updateConversationAdapter(messageList);
+    public void onMessageReceived(String message) {
+        if (message.length() < 1000) {
+            Log.d(TAG, "onMessageReceived: TEXT RECEIVED");
+            messageList.add(new Message(null, message.trim(), System.currentTimeMillis(), null, null));
+            fragmentView.updateConversationAdapter(messageList);
+        } else {
+            Log.d(TAG, "onMessageReceived: IMAGE RECEIVED");
+            messageList.add(new Message(null, null, System.currentTimeMillis(), null, convertBytesArrayIntoImage(message.getBytes())));
+        }
+//        fragmentView.updateConversationAdapter(messageList);
+
     }
 
     @Override
     public void onMessageSent(String message, Uri selectedImageUri) {
-        messageList.add(new Message(message.trim(), null, System.currentTimeMillis(), selectedImageUri));
+        messageList.add(new Message(message.trim(), null, System.currentTimeMillis(), selectedImageUri, null));
 
         if (selectedImageUri != null) {
             Log.d(TAG, "onMessageSent: IMAGE IS SENT");
@@ -135,6 +148,23 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
     @Override
     public Bitmap getSelectedImageBitmap() {
         return this.selectedImageBitmap;
+    }
+
+
+    private Bitmap convertBytesArrayIntoImage(byte[] rawImage) {
+        Log.d(TAG, "convertBytesArrayIntoImage: start");
+        Log.d(TAG, "convertBytesArrayIntoImage: Size ----> " + rawImage.length);
+
+        byte[] decodedString = Base64.decode(rawImage, Base64.DEFAULT);
+        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+
+
+        if (decodedByte == null) {
+            Log.e(TAG, "convertBytesArrayIntoImage: Factory is NULL");
+        } else {
+            Log.d(TAG, "convertBytesArrayIntoImage: Yahooo Factory is Gooooooood");
+        }
+        return decodedByte;
     }
 
     @Override

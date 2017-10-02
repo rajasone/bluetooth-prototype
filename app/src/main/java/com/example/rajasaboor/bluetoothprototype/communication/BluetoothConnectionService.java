@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelUuid;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
@@ -295,7 +296,7 @@ public class BluetoothConnectionService {
                         Log.d(TAG, "run: Message received length ====> " + readBuffer.length());
                         Message message = Message.obtain();
                         message.what = BuildConfig.MESSAGE_RECEIVED;
-                        message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(null, readBuffer.toString(), System.currentTimeMillis(), null);
+                        message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(null, readBuffer.toString(), System.currentTimeMillis(), (readBuffer.length() > 1000 ? MediaStore.Images.Media.EXTERNAL_CONTENT_URI : null), null);
                         handler.sendMessage(message);
                         Log.d(TAG, "run: Message send to the handler successfully");
                     } else {
@@ -320,7 +321,7 @@ public class BluetoothConnectionService {
                     Log.d(TAG, "write: Message sent ====> " + new String(bytes, 0, bytes.length));
                     Log.d(TAG, "write: Message sent length ====> " + new String(bytes, 0, bytes.length).length());
                     message.what = BuildConfig.MESSAGE_SENT;
-                    message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(new String(bytes, 0, bytes.length), null, System.currentTimeMillis(), imageUri);
+                    message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(new String(bytes, 0, bytes.length), null, System.currentTimeMillis(), imageUri, null);
                     handler.sendMessage(message);
                     Log.d(TAG, "run: Message send to the handler successfully");
                 } else {
@@ -369,7 +370,7 @@ public class BluetoothConnectionService {
     }
 
     interface MessageListener {
-        void onMessageReceived(String message, Uri selectedImageUri);
+        void onMessageReceived(String message);
 
         void onMessageSent(String message, Uri selectedImageUri);
     }

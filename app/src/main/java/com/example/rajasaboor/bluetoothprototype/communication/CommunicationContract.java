@@ -42,7 +42,7 @@ interface CommunicationContract {
 
         BluetoothConnectionService getBluetoothConnectionService();
 
-        byte[] convertBitmapIntoBytesArray(Bitmap bitmap);
+        String convertBitmapIntoBytesArray(Bitmap bitmap);
 
         Bitmap getSelectedImageBitmap();
     }

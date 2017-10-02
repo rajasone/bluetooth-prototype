@@ -57,5 +57,6 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
     public void updateList(List<Message> conversationList) {
         this.conversationList = conversationList;
         notifyDataSetChanged();
+
     }
 }
