@@ -1,5 +1,6 @@
 package com.example.rajasaboor.bluetoothprototype.communication;
 
+import android.content.ContextWrapper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -7,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.support.v7.view.ContextThemeWrapper;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -21,10 +23,15 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by rajaSaboor on 9/27/2017.
@@ -114,8 +121,7 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream);
         Log.d(TAG, "convertBitmapIntoBytesArray: Length of the byte array ===> " + outputStream.toByteArray().length);
-        String encodedImage = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT);
-        return encodedImage;
+        return Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT);
 
     }
 
@@ -126,6 +132,8 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
             messageList.add(new Message(null, message.trim(), System.currentTimeMillis(), null, null));
         } else {
             Log.d(TAG, "onMessageReceived: IMAGE RECEIVED");
+            // TODO: 10/3/2017 start the image save process
+            saveReceivedImageInInternalStorage(message.getBytes());
             messageList.add(new Message(null, null, System.currentTimeMillis(), null, convertBytesArrayIntoImage(message.getBytes())));
             Log.e(TAG, "onMessageReceived: End of ELSE");
         }
@@ -149,6 +157,41 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
         return this.selectedImageBitmap;
     }
 
+    @Override
+    public void saveReceivedImageInInternalStorage(byte[] imageInByte) {
+        if (fragmentView.getImagesDirectory() != null) {
+            convertBitmapIntoFile(convertBytesArrayIntoImage(imageInByte));
+        } else {
+            Log.e(TAG, "saveReceivedImageInInternalStorage: Directory for images is not created");
+        }
+    }
+
+
+    @Override
+    public void convertBitmapIntoFile(Bitmap bitmap) {
+        File pathFile = new File(fragmentView.getImagesDirectory(), "test_image_1.jpg");
+        FileOutputStream outputStream = null;
+        try {
+            outputStream = new FileOutputStream(pathFile);
+            byte[] temp = convertBitmapIntoBytesArray(bitmap).getBytes();
+            Log.d(TAG, "convertBitmapIntoFile: Length of the bytes for writing ===> " + temp.length);
+            outputStream.write(temp);
+            Log.d(TAG, "convertBitmapIntoFile: Uri of the image is ====> " + Uri.fromFile(pathFile));
+            Log.d(TAG, "convertBitmapIntoFile: File created SUCCESSFULLY");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     private Bitmap convertBytesArrayIntoImage(byte[] rawImage) {
         Log.d(TAG, "convertBytesArrayIntoImage: start");

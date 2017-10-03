@@ -1,6 +1,7 @@
 package com.example.rajasaboor.bluetoothprototype.communication;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
@@ -25,6 +26,7 @@ import com.example.rajasaboor.bluetoothprototype.adapter.ConversationAdapter;
 import com.example.rajasaboor.bluetoothprototype.databinding.CommunicationFragmentBinding;
 import com.example.rajasaboor.bluetoothprototype.model.Message;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -131,5 +133,15 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
     @Override
     public void resetChatEditText() {
         communicationFragmentBinding.sendMessageEditText.setText(null);
+    }
+
+    @Override
+    public File getFileDir() {
+        return getContext().getFilesDir();
+    }
+
+    @Override
+    public File getImagesDirectory() {
+        return getContext().getDir(BuildConfig.IMAGES_DIR_NAME, Context.MODE_PRIVATE);
     }
 }

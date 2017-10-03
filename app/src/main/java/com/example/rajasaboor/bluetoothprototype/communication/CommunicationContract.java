@@ -10,6 +10,7 @@ import android.view.View;
 import com.example.rajasaboor.bluetoothprototype.model.Message;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -29,6 +30,11 @@ interface CommunicationContract {
         void showToast(String message, int messageID);
 
         void resetChatEditText();
+
+        File getFileDir();
+
+        File getImagesDirectory();
+
     }
 
     interface Presenter {
@@ -45,5 +51,10 @@ interface CommunicationContract {
         String convertBitmapIntoBytesArray(Bitmap bitmap);
 
         Bitmap getSelectedImageBitmap();
+
+        void saveReceivedImageInInternalStorage(byte[] imageInByte);
+
+        void convertBitmapIntoFile(Bitmap bitmap);
+
     }
 }
