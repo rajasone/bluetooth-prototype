@@ -124,23 +124,22 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
         if (message.length() < 1000) {
             Log.d(TAG, "onMessageReceived: TEXT RECEIVED");
             messageList.add(new Message(null, message.trim(), System.currentTimeMillis(), null, null));
-            fragmentView.updateConversationAdapter(messageList);
         } else {
             Log.d(TAG, "onMessageReceived: IMAGE RECEIVED");
             messageList.add(new Message(null, null, System.currentTimeMillis(), null, convertBytesArrayIntoImage(message.getBytes())));
+            Log.e(TAG, "onMessageReceived: End of ELSE");
         }
-//        fragmentView.updateConversationAdapter(messageList);
-
+        fragmentView.updateConversationAdapter(messageList);
     }
 
     @Override
     public void onMessageSent(String message, Uri selectedImageUri) {
-        messageList.add(new Message(message.trim(), null, System.currentTimeMillis(), selectedImageUri, null));
-
-        if (selectedImageUri != null) {
-            Log.d(TAG, "onMessageSent: IMAGE IS SENT");
-        } else {
+        if (selectedImageUri == null) {
+            messageList.add(new Message(message.trim(), null, System.currentTimeMillis(), null, null));
             Log.e(TAG, "onMessageSent: STRING IS SENT");
+        } else {
+            messageList.add(new Message(null, null, System.currentTimeMillis(), selectedImageUri, null));
+            Log.d(TAG, "onMessageSent: IMAGE IS SENT");
         }
         fragmentView.updateConversationAdapter(messageList);
     }
@@ -154,17 +153,15 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
     private Bitmap convertBytesArrayIntoImage(byte[] rawImage) {
         Log.d(TAG, "convertBytesArrayIntoImage: start");
         Log.d(TAG, "convertBytesArrayIntoImage: Size ----> " + rawImage.length);
+        Bitmap bitmap = null;
 
-        byte[] decodedString = Base64.decode(rawImage, Base64.DEFAULT);
-        Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-
-
-        if (decodedByte == null) {
-            Log.e(TAG, "convertBytesArrayIntoImage: Factory is NULL");
-        } else {
-            Log.d(TAG, "convertBytesArrayIntoImage: Yahooo Factory is Gooooooood");
+        try {
+            byte[] decodedString = Base64.decode(rawImage, Base64.DEFAULT);
+            bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return decodedByte;
+        return bitmap;
     }
 
     @Override
@@ -182,7 +179,7 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
         Log.d(TAG, "onLoadingComplete: start");
         selectedImageBitmap = loadedImage;
         // TODO: 10/2/2017 Calling the send imahe from here
-        sendMessage(new String(convertBitmapIntoBytesArray(selectedImageBitmap)), Uri.parse(imageUri));
+        sendMessage(convertBitmapIntoBytesArray(selectedImageBitmap), Uri.parse(imageUri));
         Log.d(TAG, "onLoadingComplete: end");
 
     }

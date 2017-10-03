@@ -113,6 +113,9 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
             Log.d(TAG, "updateConversationAdapter: Conversation adapter is NULL ! Not able to update the adapter");
         }
 
+        Log.d(TAG, "updateConversationAdapter: Size of the conversation list ===> " + conversationList.size());
+        Log.d(TAG, "updateConversationAdapter: Scroll position ===> " + (conversationList.size() - 1));
+
         printConversation();
     }
 

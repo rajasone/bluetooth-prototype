@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.rajasaboor.bluetoothprototype.R;
@@ -75,6 +76,7 @@ public class CustomBindingAdapter {
         if (message.getSelectedImageUri() != null) {
             return;
         }
+
         if (TextUtils.isEmpty(message.getMyMessage()) || message.getMyMessage().length() == 0) {
             ((TextView) view).setText(message.getSenderMessage());
             ((TextView) view).setGravity(Gravity.RIGHT);
@@ -88,15 +90,21 @@ public class CustomBindingAdapter {
     @BindingAdapter("showImage")
     public static void showImage(View view, Message message) {
         Log.e(TAG, "showImage: start");
-        if (message.getReceivedImageBitmap() != null) {
 
+        if (message.getSelectedImageUri() != null) {
+            ((LinearLayout.LayoutParams) view.getLayoutParams()).gravity = Gravity.START;
+        } else {
+            ((LinearLayout.LayoutParams) view.getLayoutParams()).gravity = Gravity.END;
+        }
+
+        if (message.getReceivedImageBitmap() != null) {
             ((ImageView) view).setImageBitmap(message.getReceivedImageBitmap());
             view.setVisibility(View.VISIBLE);
             Log.d(TAG, "showImage: image set up successfully");
             return;
         }
         if (message.getSelectedImageUri() == null) {
-            ((ImageView) view).setVisibility(GONE);
+            view.setVisibility(GONE);
         } else {
             view.setVisibility(View.VISIBLE);
             ImageLoader.getInstance().displayImage(message.getSelectedImageUri().toString(), ((ImageView) view));
