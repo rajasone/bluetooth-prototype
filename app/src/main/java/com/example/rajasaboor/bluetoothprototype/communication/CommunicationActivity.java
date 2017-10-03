@@ -96,9 +96,4 @@ public class CommunicationActivity extends AppCompatActivity implements Communic
     public Application getApplicationInstance() {
         return getApplication();
     }
-
-    @Override
-    public ContentResolver getContentResolverInstance() {
-        return getContentResolver();
-    }
 }

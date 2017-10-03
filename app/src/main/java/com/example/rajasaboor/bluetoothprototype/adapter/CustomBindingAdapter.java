@@ -16,6 +16,7 @@ import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.model.Message;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -73,42 +74,45 @@ public class CustomBindingAdapter {
     @BindingAdapter("showMessage")
     public static void showMessage(View view, Message message) {
         Log.d(TAG, "showMessage: start");
+
         if (message.getSelectedImageUri() != null) {
             return;
         }
 
-        if (TextUtils.isEmpty(message.getMyMessage()) || message.getMyMessage().length() == 0) {
+        if (!message.isMyMessage()) {
             ((TextView) view).setText(message.getSenderMessage());
-            ((TextView) view).setGravity(Gravity.RIGHT);
+            ((TextView) view).setGravity(Gravity.END);
         } else {
             ((TextView) view).setText(message.getMyMessage());
-            ((TextView) view).setGravity(Gravity.LEFT);
+            ((TextView) view).setGravity(Gravity.START);
         }
         Log.d(TAG, "showMessage: end");
     }
 
     @BindingAdapter("showImage")
     public static void showImage(View view, Message message) {
-        Log.e(TAG, "showImage: start");
+        if (message.getSelectedImageUri() == null) {
+            return;
+        }
 
-        if (message.getSelectedImageUri() != null) {
+        if (message.isMyMessage()) {
             ((LinearLayout.LayoutParams) view.getLayoutParams()).gravity = Gravity.START;
         } else {
             ((LinearLayout.LayoutParams) view.getLayoutParams()).gravity = Gravity.END;
         }
 
-        if (message.getReceivedImageBitmap() != null) {
-            ((ImageView) view).setImageBitmap(message.getReceivedImageBitmap());
-            view.setVisibility(View.VISIBLE);
-            Log.d(TAG, "showImage: image set up successfully");
-            return;
+        switch (message.getSelectedImageUri().getScheme()) {
+            case "content":
+                ImageLoader.getInstance().displayImage(message.getSelectedImageUri().toString(), ((ImageView) view));
+                break;
+            case "file":
+                ImageLoader.getInstance().displayImage(Uri.fromFile(new File(message.getSelectedImageUri().getPath())).toString(), ((ImageView) view));
+                break;
         }
         if (message.getSelectedImageUri() == null) {
             view.setVisibility(GONE);
         } else {
             view.setVisibility(View.VISIBLE);
-            ImageLoader.getInstance().displayImage(message.getSelectedImageUri().toString(), ((ImageView) view));
         }
-        Log.e(TAG, "showImage: end");
     }
 }

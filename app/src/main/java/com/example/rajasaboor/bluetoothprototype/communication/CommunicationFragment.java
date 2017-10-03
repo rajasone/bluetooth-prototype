@@ -114,10 +114,6 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
         } else {
             Log.d(TAG, "updateConversationAdapter: Conversation adapter is NULL ! Not able to update the adapter");
         }
-
-        Log.d(TAG, "updateConversationAdapter: Size of the conversation list ===> " + conversationList.size());
-        Log.d(TAG, "updateConversationAdapter: Scroll position ===> " + (conversationList.size() - 1));
-
         printConversation();
     }
 
@@ -133,11 +129,6 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
     @Override
     public void resetChatEditText() {
         communicationFragmentBinding.sendMessageEditText.setText(null);
-    }
-
-    @Override
-    public File getFileDir() {
-        return getContext().getFilesDir();
     }
 
     @Override

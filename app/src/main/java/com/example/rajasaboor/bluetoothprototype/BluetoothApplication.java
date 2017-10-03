@@ -23,7 +23,7 @@ public class BluetoothApplication extends Application {
         super.onCreate();
         Log.d(TAG, "onCreate: start");
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
-			.build();
+                .build();
         ImageLoader.getInstance().init(config);
         startService();
     }

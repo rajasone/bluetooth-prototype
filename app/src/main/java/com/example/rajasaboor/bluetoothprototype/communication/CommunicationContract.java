@@ -11,6 +11,7 @@ import com.example.rajasaboor.bluetoothprototype.model.Message;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -21,7 +22,6 @@ interface CommunicationContract {
     interface ActivityView {
         Application getApplicationInstance();
 
-        ContentResolver getContentResolverInstance();
     }
 
     interface FragmentView {
@@ -30,8 +30,6 @@ interface CommunicationContract {
         void showToast(String message, int messageID);
 
         void resetChatEditText();
-
-        File getFileDir();
 
         File getImagesDirectory();
 
@@ -46,15 +44,15 @@ interface CommunicationContract {
 
         void defineConversationHandler();
 
-        BluetoothConnectionService getBluetoothConnectionService();
 
-        String convertBitmapIntoBytesArray(Bitmap bitmap);
+        void saveBitmapToFile(Bitmap bitmap, OutputStream outputStream);
 
-        Bitmap getSelectedImageBitmap();
+        String getEncodedStringFromBitmap(Bitmap bitmap);
 
-        void saveReceivedImageInInternalStorage(byte[] imageInByte);
+        Uri saveReceivedImageInInternalStorage(byte[] imageInByte);
 
-        void convertBitmapIntoFile(Bitmap bitmap);
+        Uri convertBitmapIntoFile(Bitmap bitmap);
+
 
     }
 }
