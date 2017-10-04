@@ -315,11 +315,15 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         } else if ((isPairedAdapter) && (isSettingsTapped) && (view != null)) {
             showPopUpMenu(presenter.getPairedDevices().get(position), view);
         } else if ((isPairedAdapter) && (!isSettingsTapped) && (view == null)) {
-            presenter.setSelectedDevice(presenter.getPairedDevices().get(position));
-            if (isDeviceHaveBluetoothAndPermissionGranted()) {
-                checkIsDeviceReachAble();
-            } else {
-                openAppSettings();
+            try {
+                presenter.setSelectedDevice(presenter.getPairedDevices().get(position));
+                if (isDeviceHaveBluetoothAndPermissionGranted()) {
+                    checkIsDeviceReachAble();
+                } else {
+                    openAppSettings();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
             Log.d(TAG, "onRecyclerViewTapped: end");
         }
