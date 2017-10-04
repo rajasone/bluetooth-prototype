@@ -8,9 +8,11 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -81,6 +83,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         }
     }
 
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -88,6 +91,8 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         mainFragmentBinding.setConnectionHandler(this);
         setUpDiscoverDevicesRecyclerView();
         setUpPairedDevicesRecyclerView();
+
+        checkSdkVersionAndShowMessage();
 
         if (savedInstanceState != null) {
             Log.d(TAG, "onCreateView: Saving the state of no text view is ---> " + savedInstanceState.getBoolean("show_no_bluetooth_text_view"));
@@ -100,6 +105,21 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         }
 
         return mainFragmentBinding.getRoot();
+    }
+
+    private void checkSdkVersionAndShowMessage() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            mainFragmentBinding.messageTextView.setVisibility(View.VISIBLE);
+        } else {
+            mainFragmentBinding.messageTextView.setVisibility(View.GONE);
+        }
+    }
+
+    public void openBluetoothIntent() {
+        Log.d(TAG, "openBluetoothIntent: start");
+        Intent bluetoothIntent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
+        startActivity(bluetoothIntent);
+        Log.d(TAG, "openBluetoothIntent: end");
     }
 
 
@@ -392,6 +412,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
             showView(mainFragmentBinding.numberOfAvailableDevices, true);
             showView(mainFragmentBinding.numberOfPairedDevicesTextView, true);
             mainFragmentBinding.searchBluetoothButton.setEnabled(true);
+            checkSdkVersionAndShowMessage();
         } else {
             showView(mainFragmentBinding.pairedDevicesTextView, false);
             showView(mainFragmentBinding.pairedDevicesRecyclerView, false);
@@ -402,6 +423,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
             showView(mainFragmentBinding.numberOfPairedDevicesTextView, false);
             mainFragmentBinding.searchBluetoothButton.setEnabled(false);
             showView(mainFragmentBinding.discoverProgressBar, false);
+            showView(mainFragmentBinding.messageTextView, false);
         }
     }
 

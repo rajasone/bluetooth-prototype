@@ -26,4 +26,5 @@
     <string name="attach_image">Attach</string>
     <string name="title_activity_preview">PreviewActivity</string>
     <string name="image">image</string>
+    <string name="bluetooth_discovery_message">Click here to make you device discoverable</string>
 </resources>
