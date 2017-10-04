@@ -294,7 +294,7 @@ public class BluetoothConnectionService {
                         Log.d(TAG, "run: Message received length ====> " + readBuffer.length());
                         Message message = Message.obtain();
                         message.what = BuildConfig.MESSAGE_RECEIVED;
-                        message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(false, null, (readBuffer.length() < 1000 ? readBuffer.toString() : null), System.currentTimeMillis(), (readBuffer.length() > 1000 ? Uri.parse(readBuffer.toString()) : null));
+                        message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(false, (readBuffer.length() < 1000 ? readBuffer.toString() : null), System.currentTimeMillis(), (readBuffer.length() > 1000 ? Uri.parse(readBuffer.toString()) : null));
                         handler.sendMessage(message);
                         Log.d(TAG, "run: Message send to the handler successfully");
                     } else {
@@ -319,7 +319,7 @@ public class BluetoothConnectionService {
                     Log.d(TAG, "write: Message sent ====> " + new String(bytes, 0, bytes.length));
                     Log.d(TAG, "write: Message sent length ====> " + new String(bytes, 0, bytes.length).length());
                     message.what = BuildConfig.MESSAGE_SENT;
-                    message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(true, (imageUri == null ? new String(bytes, 0, bytes.length) : null), null, System.currentTimeMillis(),
+                    message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(true, (imageUri == null ? new String(bytes, 0, bytes.length) : null), System.currentTimeMillis(),
                             ((imageUri == null ? null : imageUri)));
                     handler.sendMessage(message);
                     Log.d(TAG, "run: Message send to the handler successfully");

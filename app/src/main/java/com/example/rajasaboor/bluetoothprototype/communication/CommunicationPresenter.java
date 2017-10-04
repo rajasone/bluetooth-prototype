@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by rajaSaboor on 9/27/2017.
@@ -116,27 +117,38 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
 
     @Override
     public void onMessageReceived(Message message) {
-        if (message.getSenderMessage() != null) {
+        Message temp = null;
+        if (message.getMyMessage() != null) {
             Log.d(TAG, "onMessageReceived: TEXT RECEIVED");
-            messageList.add(new Message(false, null, message.getSenderMessage(), System.currentTimeMillis(), null));
+            temp = new Message(false, message.getMyMessage(), System.currentTimeMillis(), null);
+            messageList.add(temp);
         } else {
             Log.d(TAG, "onMessageReceived: IMAGE RECEIVED");
             // TODO: 10/3/2017 start the image save process
-            messageList.add(new Message(false, null, message.getSenderMessage(), System.currentTimeMillis(), saveReceivedImageInInternalStorage(message.getSelectedImageUri().toString().getBytes())));
+            temp = new Message(false, null, System.currentTimeMillis(), saveReceivedImageInInternalStorage(message.getSelectedImageUri().toString().getBytes()));
+            messageList.add(temp);
         }
-        fragmentView.updateConversationAdapter(messageList);
+//        fragmentView.updateConversationAdapter(messageList);
+        fragmentView.updateConversation(temp);
     }
 
     @Override
     public void onMessageSent(Message message) {
+        Message temp = null;
+
         if (message.getMyMessage() != null) {
-            messageList.add(new Message(true, message.getMyMessage(), null, message.getMessageTime(), null));
+            temp = new Message(true, message.getMyMessage(), message.getMessageTime(), null);
+            Log.d(TAG, "onMessageSent: Size of the list before insertion ====> " + getMessageList().size());
+            messageList.add(temp);
+            Log.d(TAG, "onMessageSent: Size of the list after insertion ====> " + getMessageList().size());
             Log.e(TAG, "onMessageSent: STRING IS SENT");
         } else {
-            messageList.add(new Message(true, null, null, message.getMessageTime(), message.getSelectedImageUri()));
+            temp = new Message(true, null, message.getMessageTime(), message.getSelectedImageUri());
+            messageList.add(temp);
             Log.d(TAG, "onMessageSent: IMAGE IS SENT");
         }
-        fragmentView.updateConversationAdapter(messageList);
+//        fragmentView.updateConversationAdapter(messageList);
+        fragmentView.updateConversation(temp);
     }
 
 
@@ -155,7 +167,9 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
 
     @Override
     public Uri convertBitmapIntoFile(Bitmap bitmap) {
-        File pathFile = new File(fragmentView.getImagesDirectory(), "test_image_1.jpg");
+        String fileName = "test_image_" + UUID.randomUUID() + ".jpg";
+        Log.d(TAG, "convertBitmapIntoFile: File Name ====> " + fileName);
+        File pathFile = new File(fragmentView.getImagesDirectory(), fileName);
         FileOutputStream outputStream = null;
         Uri imageUri = null;
         try {
@@ -202,7 +216,7 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
     @Override
     public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
         Log.d(TAG, "onLoadingComplete: start");
-        // TODO: 10/2/2017 Calling the send imahe from here
+        // TODO: 10/2/2017 Calling the send image from here
         sendMessage(getEncodedStringFromBitmap(loadedImage), Uri.parse(imageUri));
 
     }

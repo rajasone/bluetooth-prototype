@@ -35,6 +35,7 @@
                 android:gravity="start"
                 android:maxLength="999"
                 android:padding="4dp"
+                android:visibility="gone"
                 app:showMessage="@{message}"
                 tools:text="Message" />
 

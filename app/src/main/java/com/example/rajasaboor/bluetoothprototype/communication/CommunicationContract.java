@@ -27,11 +27,14 @@ interface CommunicationContract {
     interface FragmentView {
         void updateConversationAdapter(List<Message> conversationList);
 
+        void updateConversation(Message message);
+
         void showToast(String message, int messageID);
 
         void resetChatEditText();
 
         File getImagesDirectory();
+
 
     }
 

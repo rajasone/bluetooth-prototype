@@ -1,6 +1,5 @@
 package com.example.rajasaboor.bluetoothprototype.model;
 
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -12,8 +11,7 @@ import android.os.Parcelable;
 public class Message implements Parcelable {
     private static final String TAG = Message.class.getSimpleName();
     private boolean isMyMessage;
-    private String myMessage;
-    private String senderMessage;
+    private String textMessage;
     private long messageTime;
     private Uri selectedImageUri;
 
@@ -21,10 +19,9 @@ public class Message implements Parcelable {
     public Message() {
     }
 
-    public Message(boolean isMyMessage, String myMessage, String senderMessage, long messageTime, Uri selectedImageUri) {
+    public Message(boolean isMyMessage, String textMessage, long messageTime, Uri selectedImageUri) {
         this.isMyMessage = isMyMessage;
-        this.myMessage = myMessage;
-        this.senderMessage = senderMessage;
+        this.textMessage = textMessage;
         this.messageTime = messageTime;
         this.selectedImageUri = selectedImageUri;
     }
@@ -34,12 +31,9 @@ public class Message implements Parcelable {
     }
 
     public String getMyMessage() {
-        return myMessage;
+        return textMessage;
     }
 
-    public String getSenderMessage() {
-        return senderMessage;
-    }
 
     public long getMessageTime() {
         return messageTime;
@@ -58,16 +52,14 @@ public class Message implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeByte(this.isMyMessage ? (byte) 1 : (byte) 0);
-        dest.writeString(this.myMessage);
-        dest.writeString(this.senderMessage);
+        dest.writeString(this.textMessage);
         dest.writeLong(this.messageTime);
         dest.writeParcelable(this.selectedImageUri, flags);
     }
 
     protected Message(Parcel in) {
         this.isMyMessage = in.readByte() != 0;
-        this.myMessage = in.readString();
-        this.senderMessage = in.readString();
+        this.textMessage = in.readString();
         this.messageTime = in.readLong();
         this.selectedImageUri = in.readParcelable(Uri.class.getClassLoader());
     }

@@ -1,14 +1,9 @@
 package com.example.rajasaboor.bluetoothprototype.communication;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.databinding.DataBindingUtil;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,15 +14,12 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
-import com.example.rajasaboor.bluetoothprototype.PreviewActivity;
-import com.example.rajasaboor.bluetoothprototype.PreviewFragment;
 import com.example.rajasaboor.bluetoothprototype.R;
 import com.example.rajasaboor.bluetoothprototype.adapter.ConversationAdapter;
 import com.example.rajasaboor.bluetoothprototype.databinding.CommunicationFragmentBinding;
 import com.example.rajasaboor.bluetoothprototype.model.Message;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -89,16 +81,15 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
     }
 
     private void printConversation() {
-        Log.d(TAG, "updateConversationAdapter: ------------------------------------");
+        Log.d(TAG, "printConversation: ------------------------------------");
         for (Message message : presenter.getMessageList()) {
-            Log.d(TAG, "updateConversationAdapter: Is My Message ---> " + message.isMyMessage());
-            Log.d(TAG, "updateConversationAdapter: My ---> " + message.getMyMessage());
-            Log.d(TAG, "updateConversationAdapter: Sender ---> " + message.getSenderMessage());
-            Log.d(TAG, "updateConversationAdapter: Message Time ---> " + new SimpleDateFormat("h:m a", Locale.US).format(new Date(message.getMessageTime())));
-            Log.d(TAG, "updateConversationAdapter: Image Uri ---> " + message.getSelectedImageUri());
-            Log.d(TAG, "updateConversationAdapter: ***********************");
+            Log.d(TAG, "printConversation: Is My Message ---> " + message.isMyMessage());
+            Log.d(TAG, "printConversation: My ---> " + message.getMyMessage());
+            Log.d(TAG, "printConversation: Message Time ---> " + new SimpleDateFormat("h:m a", Locale.US).format(new Date(message.getMessageTime())));
+            Log.d(TAG, "printConversation: Image Uri ---> " + message.getSelectedImageUri());
+            Log.d(TAG, "printConversation: ***********************");
         }
-        Log.d(TAG, "updateConversationAdapter: ------------------------------------");
+        Log.d(TAG, "printConversation: ------------------------------------");
     }
 
     @Override
@@ -116,9 +107,23 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
         if (conversationAdapter != null) {
             Log.d(TAG, "updateConversationAdapter: Adapter is good ! Updating");
             conversationAdapter.updateList(conversationList);
-            communicationFragmentBinding.conversationRecyclerView.scrollToPosition(conversationList.size() - 1);
+            communicationFragmentBinding.conversationRecyclerView.scrollToPosition(conversationAdapter.getItemCount() - 1);
         } else {
             Log.d(TAG, "updateConversationAdapter: Conversation adapter is NULL ! Not able to update the adapter");
+        }
+        printConversation();
+    }
+
+    @Override
+    public void updateConversation(Message message) {
+        ConversationAdapter conversationAdapter = (ConversationAdapter) communicationFragmentBinding.conversationRecyclerView.getAdapter();
+
+        if (conversationAdapter != null) {
+            Log.d(TAG, "updateConversation: Adapter is good ! Updating");
+            conversationAdapter.updateConversation(message);
+            communicationFragmentBinding.conversationRecyclerView.scrollToPosition(conversationAdapter.getItemCount() - 1);
+        } else {
+            Log.d(TAG, "updateConversation: Conversation adapter is NULL ! Not able to update the adapter");
         }
         printConversation();
     }

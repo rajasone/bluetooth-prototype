@@ -2,6 +2,7 @@ package com.example.rajasaboor.bluetoothprototype.adapter;
 
 import android.databinding.DataBindingUtil;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -57,6 +58,14 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
     public void updateList(List<Message> conversationList) {
         this.conversationList = conversationList;
         notifyDataSetChanged();
+
+    }
+
+    public void updateConversation(Message message) {
+        if (!conversationList.contains(message)) {
+            this.conversationList.add(message);
+        }
+        notifyItemChanged(this.conversationList.size() - 1);
 
     }
 }

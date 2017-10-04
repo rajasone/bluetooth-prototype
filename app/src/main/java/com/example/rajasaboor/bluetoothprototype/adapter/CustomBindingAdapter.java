@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.databinding.BindingAdapter;
 import android.net.Uri;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -20,8 +19,6 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import static android.view.View.GONE;
 
 /**
  * Created by rajaSaboor on 9/22/2017.
@@ -68,25 +65,25 @@ public class CustomBindingAdapter {
 
     @BindingAdapter("showMessage")
     public static void showMessage(View view, Message message) {
-        Log.d(TAG, "showMessage: start");
 
         if (message.getSelectedImageUri() != null) {
             return;
         }
 
+        ((TextView) view).setText(message.getMyMessage());
+        Log.d(TAG, "showMessage: Text which is set to the VIEW ====> " + message.getMyMessage());
+        view.setVisibility(View.VISIBLE);
         if (!message.isMyMessage()) {
-            ((TextView) view).setText(message.getSenderMessage());
             ((TextView) view).setGravity(Gravity.END);
         } else {
-            ((TextView) view).setText(message.getMyMessage());
             ((TextView) view).setGravity(Gravity.START);
         }
-        Log.d(TAG, "showMessage: end");
     }
 
     @BindingAdapter("showImage")
     public static void showImage(View view, Message message) {
         if (message.getSelectedImageUri() == null) {
+            view.setVisibility(View.GONE);
             return;
         }
 

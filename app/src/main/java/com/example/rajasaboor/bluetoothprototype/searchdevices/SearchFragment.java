@@ -395,6 +395,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
             showView(mainFragmentBinding.numberOfAvailableDevices, false);
             showView(mainFragmentBinding.numberOfPairedDevicesTextView, false);
             mainFragmentBinding.searchBluetoothButton.setEnabled(false);
+            showView(mainFragmentBinding.discoverProgressBar, false);
         }
     }
 
