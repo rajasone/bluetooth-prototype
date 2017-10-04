@@ -1,6 +1,5 @@
 package com.example.rajasaboor.bluetoothprototype.searchdevices;
 
-import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -8,20 +7,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
-import android.widget.CompoundButton;
 
 import com.example.rajasaboor.bluetoothprototype.BluetoothApplication;
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 import com.example.rajasaboor.bluetoothprototype.R;
-import com.example.rajasaboor.bluetoothprototype.communication.BluetoothConnectionService;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -325,7 +320,7 @@ public class SearchPresenter implements SearchContract.Presenter {
 
     @Override
     public Handler getHandler() {
-        return ((BluetoothApplication) activityView.getApplicationInstance()).getService().getHandler();
+        return ((BluetoothApplication) activityView.getApplicationInstance()).getService().getConnectionHandler();
     }
 
     @Override
@@ -335,21 +330,25 @@ public class SearchPresenter implements SearchContract.Presenter {
             return;
         }
 
-
-        ((BluetoothApplication) activityView.getApplicationInstance()).getService().setHandler(new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message message) {
-                Log.d(TAG, "handleMessage: MEssage arg 1 ---> " + message.arg1);
-                if (message.arg1 == BuildConfig.CONNECTED_SUCCESSFULLY) {
-                    fragmentView.showToast((((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), R.string.connected_with);
-                    fragmentView.startChatActivity();
-                } else {
-                    if (message.obj != null) {
-                        fragmentView.showToast((((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), R.string.failed_to_connect);
+        try {
+            ((BluetoothApplication) activityView.getApplicationInstance()).getService().setConnectionHandler(new Handler(Looper.getMainLooper()) {
+                @Override
+                public void handleMessage(Message message) {
+                    Log.d(TAG, "handleMessage: MEssage arg 1 ---> " + message.arg1);
+                    if (message.arg1 == BuildConfig.CONNECTED_SUCCESSFULLY) {
+                        fragmentView.showToast((((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), R.string.connected_with);
+                        fragmentView.startChatActivity();
+                    } else {
+                        if (message.obj != null) {
+                            fragmentView.showToast((((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), R.string.failed_to_connect);
+                        }
                     }
                 }
-            }
-        });
-        Log.d(TAG, "defineHandler: end");
+            });
+            Log.d(TAG, "defineHandler: end");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
 }

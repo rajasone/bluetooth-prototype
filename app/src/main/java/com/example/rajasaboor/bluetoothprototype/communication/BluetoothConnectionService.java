@@ -10,23 +10,14 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
-import android.os.ParcelUuid;
-import android.provider.MediaStore;
 import android.util.Log;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Serializable;
-import java.nio.Buffer;
 import java.nio.charset.Charset;
 import java.util.UUID;
 
@@ -41,26 +32,32 @@ public class BluetoothConnectionService {
     private ConnectThread mConnectThread;
     private BluetoothDevice mmDevice;
     private ConnectedThread mConnectedThread;
-    private Handler handler;
     private MessageListener messageListener;
 
+    private Handler connectionHandler;
+    private Handler communicationHandler;
 
-    public void setHandler(Handler handler) {
-        this.handler = handler;
+
+    public void setConnectionHandler(Handler connectionHandler) {
+        this.connectionHandler = connectionHandler;
     }
 
-    public Handler getHandler() {
-        return handler;
+    public Handler getConnectionHandler() {
+        return connectionHandler;
+    }
+
+    public Handler getCommunicationHandler() {
+        return communicationHandler;
+    }
+
+    public void setCommunicationHandler(Handler communicationHandler) {
+        this.communicationHandler = communicationHandler;
     }
 
     public BluetoothConnectionService() {
         start();
     }
 
-    public void setMessage(Message message, BluetoothDevice device, int msg) {
-        message.arg1 = msg;
-        message.obj = device;
-    }
 
     public void cancel() {
         // Cancel any thread attempting to make a connection
@@ -114,20 +111,21 @@ public class BluetoothConnectionService {
                 // successful connection or an exception
                 Log.d(TAG, "run: RFCOM server socket start.....");
                 socket = mmServerSocket.accept();
-                setMessage(message, socket.getRemoteDevice(), BuildConfig.CONNECTED_SUCCESSFULLY);
+                message.arg1 = BuildConfig.CONNECTED_SUCCESSFULLY;
+                message.obj = socket.getRemoteDevice();
                 connected(socket, mmDevice);
 
                 Log.d(TAG, "run: RFCOM server socket accepted connection.");
             } catch (IOException e) {
                 Log.e(TAG, "AcceptThread: IOException: " + e.getMessage());
                 try {
-                    setMessage(message, socket.getRemoteDevice(), BuildConfig.CONNECTION_FAILED);
+                    message.arg1 = BuildConfig.CONNECTION_FAILED;
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
             }
 
-            handler.sendMessage(message);
+            connectionHandler.sendMessage(message);
 
             Log.i(TAG, "END mAcceptThread ");
         }
@@ -170,6 +168,7 @@ public class BluetoothConnectionService {
                 mmSocket = tmp;
             } catch (IOException e) {
                 Log.e(TAG, "ConnectThread: Could not create InsecureRfcommSocket " + e.getMessage());
+
                 return;
             }
 
@@ -184,7 +183,8 @@ public class BluetoothConnectionService {
                 // This is a blocking call and will only return on a
                 // successful connection or an exception
                 mmSocket.connect();
-                setMessage(message, mmSocket.getRemoteDevice(), BuildConfig.CONNECTED_SUCCESSFULLY);
+                message.arg1 = BuildConfig.CONNECTED_SUCCESSFULLY;
+                message.obj = mmSocket.getRemoteDevice();
                 connected(mmSocket, mmDevice);
                 Log.d(TAG, "run: ConnectThread connected.");
             } catch (IOException e) {
@@ -196,12 +196,13 @@ public class BluetoothConnectionService {
                 } catch (IOException e1) {
                     Log.e(TAG, "mConnectThread: run: Unable to close connection in socket " + e1.getMessage());
                 }
-                setMessage(message, mmSocket.getRemoteDevice(), BuildConfig.CONNECTION_FAILED);
+                message.arg1 = BuildConfig.CONNECTION_FAILED;
+                message.obj = mmSocket.getRemoteDevice();
                 Log.d(TAG, "run: ConnectThread: Could not connect to UUID: " + BuildConfig.UUID);
             }
             Log.e(TAG, "run: Sending the message");
             try {
-                handler.sendMessage(message);
+                connectionHandler.sendMessage(message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -289,14 +290,14 @@ public class BluetoothConnectionService {
                             break;
                         }
                     }
-                    if ((messageListener != null) && (handler != null)) {
+                    if ((messageListener != null) && (communicationHandler != null)) {
                         Log.d(TAG, "run: Message received ====> " + readBuffer);
                         Log.d(TAG, "run: Message received length ====> " + readBuffer.length());
                         Message message = Message.obtain();
                         message.what = BuildConfig.MESSAGE_RECEIVED;
                         message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(false, (readBuffer.length() < 1000 ? readBuffer.toString() : null), System.currentTimeMillis(), (readBuffer.length() > 1000 ? Uri.parse(readBuffer.toString()) : null));
-                        handler.sendMessage(message);
-                        Log.d(TAG, "run: Message send to the handler successfully");
+                        communicationHandler.sendMessage(message);
+                        Log.d(TAG, "run: Message send to the connectionHandler successfully");
                     } else {
                         Log.e(TAG, "run: Message Listener or Handler is NULL");
                     }
@@ -315,21 +316,21 @@ public class BluetoothConnectionService {
 
             try {
                 mmOutStream.write(bytes);
-                if ((messageListener != null) && (handler != null)) {
+                if ((messageListener != null) && (communicationHandler != null)) {
                     Log.d(TAG, "write: Message sent ====> " + new String(bytes, 0, bytes.length));
                     Log.d(TAG, "write: Message sent length ====> " + new String(bytes, 0, bytes.length).length());
                     message.what = BuildConfig.MESSAGE_SENT;
                     message.obj = new com.example.rajasaboor.bluetoothprototype.model.Message(true, (imageUri == null ? new String(bytes, 0, bytes.length) : null), System.currentTimeMillis(),
                             ((imageUri == null ? null : imageUri)));
-                    handler.sendMessage(message);
-                    Log.d(TAG, "run: Message send to the handler successfully");
+                    communicationHandler.sendMessage(message);
+                    Log.d(TAG, "run: Message send to the connectionHandler successfully");
                 } else {
                     Log.e(TAG, "run: Message Listener or Handler is NULL");
                 }
             } catch (IOException e) {
                 Log.e(TAG, "write: Error writing to output stream. " + e.getMessage());
                 message.what = BuildConfig.FAILED_TO_SEND_MESSAGE;
-                handler.sendMessage(message);
+                communicationHandler.sendMessage(message);
 
             }
         }

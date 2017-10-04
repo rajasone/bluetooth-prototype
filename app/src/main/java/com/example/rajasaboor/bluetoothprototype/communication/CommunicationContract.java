@@ -21,7 +21,6 @@ import java.util.List;
 interface CommunicationContract {
     interface ActivityView {
         Application getApplicationInstance();
-
     }
 
     interface FragmentView {
@@ -51,6 +50,6 @@ interface CommunicationContract {
 
         Uri convertBitmapIntoFile(Bitmap bitmap);
 
-
+        void deleteImagesDirectory(File file);
     }
 }

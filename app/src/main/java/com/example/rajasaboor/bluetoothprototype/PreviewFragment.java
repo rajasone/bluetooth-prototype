@@ -42,7 +42,7 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView: start");
         imagePreviewBinding = DataBindingUtil.inflate(inflater, R.layout.selected_image_preview, container, false);
-        imagePreviewBinding.setHandler(this);
+        imagePreviewBinding.setConnectionHandler(this);
         ImageLoader.getInstance().displayImage(getArguments().getString(BuildConfig.SELECTED_IMAGE_URI, null), imagePreviewBinding.previewImageView);
 
         Log.d(TAG, "onCreateView: end");

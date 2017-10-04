@@ -43,7 +43,7 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         communicationFragmentBinding = DataBindingUtil.inflate(inflater, R.layout.communication_fragment, container, false);
-        communicationFragmentBinding.setHandler(this);
+        communicationFragmentBinding.setConnectionHandler(this);
         initConversationRecyclerView();
 
         if (savedInstanceState != null) {
@@ -111,6 +111,7 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
         } else {
             Log.d(TAG, "updateConversation: Conversation adapter is NULL ! Not able to update the adapter");
         }
+        presenter.deleteImagesDirectory(getImagesDirectory());
         printConversation();
     }
 

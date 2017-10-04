@@ -64,14 +64,17 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
     @Override
     public void defineConversationHandler() {
         Log.d(TAG, "defineConversationHandler: start");
-        if (((BluetoothApplication) activityView.getApplicationInstance()).getService().getHandler() != null) {
+
+        /*
+        if (((BluetoothApplication) activityView.getApplicationInstance()).getService().getConnectionHandler() != null) {
             Log.d(TAG, "defineConversationHandler: Handler is not NULL | Setting it to the NULL");
-            ((BluetoothApplication) activityView.getApplicationInstance()).getService().setHandler(null);
+            ((BluetoothApplication) activityView.getApplicationInstance()).getService().setConnectionHandler(null);
         } else {
             Log.d(TAG, "defineConversationHandler: Handler is already NULL");
         }
+        */
 
-        ((BluetoothApplication) activityView.getApplicationInstance()).getService().setHandler(new Handler(Looper.getMainLooper()) {
+        ((BluetoothApplication) activityView.getApplicationInstance()).getService().setCommunicationHandler(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(android.os.Message msg) {
                 int messageStatus = msg.what;
@@ -187,6 +190,22 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
         }
 
         return imageUri;
+    }
+
+    @Override
+    public void deleteImagesDirectory(File file) {
+        Log.d(TAG, "deleteImagesDirectory: start");
+
+        if (file.isDirectory()) {
+            for (File content : file.listFiles()) {
+                Log.d(TAG, "deleteImagesDirectory: File Name ---->" + content.getName());
+//                deleteImagesDirectory(content);
+            }
+        }else{
+            Log.d(TAG, "deleteImagesDirectory: This isn't a directory");
+        }
+        Log.d(TAG, "deleteImagesDirectory: end");
+//        file.delete();
     }
 
     private Bitmap convertBytesArrayIntoImage(byte[] rawImage) {

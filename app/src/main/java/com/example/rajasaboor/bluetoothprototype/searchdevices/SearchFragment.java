@@ -42,7 +42,7 @@ import java.util.UUID;
  * Created by rajaSaboor on 9/7/2017.
  */
 
-public class SearchFragment extends Fragment implements SearchContract.FragmentView {
+public class SearchFragment extends Fragment implements SearchContract.FragmentView, View.OnClickListener, CompoundButton.OnCheckedChangeListener, PairedDevicesAdapter.OnRecyclerViewTapped {
     private static final String TAG = SearchFragment.class.getSimpleName();
     private SearchContract.Presenter presenter = null;
     private MainFragmentBinding mainFragmentBinding;
@@ -85,7 +85,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mainFragmentBinding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false);
-        mainFragmentBinding.setHandler(this);
+        mainFragmentBinding.setConnectionHandler(this);
         setUpDiscoverDevicesRecyclerView();
         setUpPairedDevicesRecyclerView();
 
@@ -322,7 +322,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
                 } else {
                     openAppSettings();
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             Log.d(TAG, "onRecyclerViewTapped: end");

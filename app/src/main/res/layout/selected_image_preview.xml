@@ -5,7 +5,7 @@
     <data>
 
         <variable
-            name="handler"
+            name="connectionHandler"
             type="android.view.View.OnClickListener" />
     </data>
 
@@ -38,7 +38,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:onClick="@{(view)-> handler.onClick(view)}"
+            android:onClick="@{(view)-> connectionHandler.onClick(view)}"
             android:text="@string/send_message"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"

@@ -37,7 +37,7 @@ public interface SearchContract {
         Application getApplicationInstance();
     }
 
-    interface FragmentView extends View.OnClickListener, CompoundButton.OnCheckedChangeListener, PairedDevicesAdapter.OnRecyclerViewTapped {
+    interface FragmentView {
         void enableSearchButton(boolean enable);
 
         void showViews(boolean bluetoothOnViews);
@@ -59,14 +59,6 @@ public interface SearchContract {
         void showDiscoveryProgressBar(boolean show);
 
         void showPopUpMenu(BluetoothDevice device, View view);
-
-        @Override
-        void onClick(View view);
-
-        @Override
-        void onCheckedChanged(CompoundButton compoundButton, boolean b);
-
-        void onRecyclerViewTapped(int position, boolean isPairedAdapter, boolean isSettingsTapped, View view);
 
         void startChatActivity();
 
