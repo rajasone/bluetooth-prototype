@@ -63,12 +63,7 @@ public class CustomBindingAdapter {
 
     @BindingAdapter("setTime")
     public static void setTime(View view, Message message) {
-        if (TextUtils.isEmpty(message.getMyMessage()) || message.getMyMessage().length() == 0) {
-            ((TextView) view).setText(new SimpleDateFormat("h:m a", Locale.US).format(new Date(message.getMessageTime())));
-        } else {
-            ((TextView) view).setText(new SimpleDateFormat("h:m a", Locale.US).format(new Date(message.getMessageTime())));
-        }
-
+        ((TextView) view).setText(new SimpleDateFormat("h:m a", Locale.US).format(new Date(message.getMessageTime())));
     }
 
     @BindingAdapter("showMessage")
@@ -104,15 +99,12 @@ public class CustomBindingAdapter {
         switch (message.getSelectedImageUri().getScheme()) {
             case "content":
                 ImageLoader.getInstance().displayImage(message.getSelectedImageUri().toString(), ((ImageView) view));
+                view.setVisibility(View.VISIBLE);
                 break;
             case "file":
                 ImageLoader.getInstance().displayImage(Uri.fromFile(new File(message.getSelectedImageUri().getPath())).toString(), ((ImageView) view));
+                view.setVisibility(View.VISIBLE);
                 break;
-        }
-        if (message.getSelectedImageUri() == null) {
-            view.setVisibility(GONE);
-        } else {
-            view.setVisibility(View.VISIBLE);
         }
     }
 }

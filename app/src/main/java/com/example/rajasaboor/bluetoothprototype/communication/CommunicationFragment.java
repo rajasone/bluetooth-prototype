@@ -28,8 +28,11 @@ import com.example.rajasaboor.bluetoothprototype.model.Message;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by rajaSaboor on 9/27/2017.
@@ -88,8 +91,11 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
     private void printConversation() {
         Log.d(TAG, "updateConversationAdapter: ------------------------------------");
         for (Message message : presenter.getMessageList()) {
+            Log.d(TAG, "updateConversationAdapter: Is My Message ---> " + message.isMyMessage());
             Log.d(TAG, "updateConversationAdapter: My ---> " + message.getMyMessage());
             Log.d(TAG, "updateConversationAdapter: Sender ---> " + message.getSenderMessage());
+            Log.d(TAG, "updateConversationAdapter: Message Time ---> " + new SimpleDateFormat("h:m a", Locale.US).format(new Date(message.getMessageTime())));
+            Log.d(TAG, "updateConversationAdapter: Image Uri ---> " + message.getSelectedImageUri());
             Log.d(TAG, "updateConversationAdapter: ***********************");
         }
         Log.d(TAG, "updateConversationAdapter: ------------------------------------");

@@ -44,7 +44,6 @@ interface CommunicationContract {
 
         void defineConversationHandler();
 
-
         void saveBitmapToFile(Bitmap bitmap, OutputStream outputStream);
 
         String getEncodedStringFromBitmap(Bitmap bitmap);
