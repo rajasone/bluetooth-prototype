@@ -101,20 +101,6 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
     }
 
     @Override
-    public void updateConversationAdapter(List<Message> conversationList) {
-        ConversationAdapter conversationAdapter = (ConversationAdapter) communicationFragmentBinding.conversationRecyclerView.getAdapter();
-
-        if (conversationAdapter != null) {
-            Log.d(TAG, "updateConversationAdapter: Adapter is good ! Updating");
-            conversationAdapter.updateList(conversationList);
-            communicationFragmentBinding.conversationRecyclerView.scrollToPosition(conversationAdapter.getItemCount() - 1);
-        } else {
-            Log.d(TAG, "updateConversationAdapter: Conversation adapter is NULL ! Not able to update the adapter");
-        }
-        printConversation();
-    }
-
-    @Override
     public void updateConversation(Message message) {
         ConversationAdapter conversationAdapter = (ConversationAdapter) communicationFragmentBinding.conversationRecyclerView.getAdapter();
 

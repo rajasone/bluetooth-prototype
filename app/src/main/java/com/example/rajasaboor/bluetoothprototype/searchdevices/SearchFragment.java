@@ -258,11 +258,13 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
                 if (presenter.isDeviceHaveBluetooth()) {
                     permissionsValidation(Manifest.permission.ACCESS_COARSE_LOCATION);
                     if (isDeviceHaveBluetoothAndPermissionGranted()) {
+                        Log.d(TAG, "onClick: START the view alterations");
                         showDiscoveryProgressBar(true);
                         resetListSizeTextViews();
                         resetAdapter(false);
                         presenter.registerDeviceDiscoveryBroadcast();
                         presenter.setDeviceDiscoveryForChatActivity(false);
+                        Log.d(TAG, "onClick: END the view alterations");
                     } else {
                         showToast("Enable bluetooth", BuildConfig.NO_RESOURCE);
                     }

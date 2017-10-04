@@ -25,8 +25,6 @@ interface CommunicationContract {
     }
 
     interface FragmentView {
-        void updateConversationAdapter(List<Message> conversationList);
-
         void updateConversation(Message message);
 
         void showToast(String message, int messageID);
@@ -34,8 +32,6 @@ interface CommunicationContract {
         void resetChatEditText();
 
         File getImagesDirectory();
-
-
     }
 
     interface Presenter {

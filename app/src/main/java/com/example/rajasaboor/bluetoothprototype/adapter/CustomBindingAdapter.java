@@ -60,18 +60,18 @@ public class CustomBindingAdapter {
 
     @BindingAdapter("setTime")
     public static void setTime(View view, Message message) {
-        ((TextView) view).setText(new SimpleDateFormat("h:m a", Locale.US).format(new Date(message.getMessageTime())));
+        ((TextView) view).setText(new SimpleDateFormat("hh:mm a", Locale.US).format(new Date(message.getMessageTime())));
     }
 
     @BindingAdapter("showMessage")
     public static void showMessage(View view, Message message) {
 
         if (message.getSelectedImageUri() != null) {
+            view.setVisibility(View.GONE);
             return;
         }
 
         ((TextView) view).setText(message.getMyMessage());
-        Log.d(TAG, "showMessage: Text which is set to the VIEW ====> " + message.getMyMessage());
         view.setVisibility(View.VISIBLE);
         if (!message.isMyMessage()) {
             ((TextView) view).setGravity(Gravity.END);

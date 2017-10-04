@@ -30,14 +30,14 @@ import java.util.UUID;
  * Created by rajaSaboor on 9/27/2017.
  */
 
-public class CommunicationPresenter implements CommunicationContract.Presenter, BluetoothConnectionService.MessageListener, ImageLoadingListener {
+class CommunicationPresenter implements CommunicationContract.Presenter, BluetoothConnectionService.MessageListener, ImageLoadingListener {
     private static final String TAG = CommunicationFragment.class.getSimpleName();
     private CommunicationContract.FragmentView fragmentView;
     private CommunicationContract.ActivityView activityView;
     private BluetoothConnectionService bluetoothConnectionService;
     private List<Message> messageList = new ArrayList<>();
 
-    public CommunicationPresenter(CommunicationContract.FragmentView fragmentView, CommunicationContract.ActivityView activityView) {
+    CommunicationPresenter(CommunicationContract.FragmentView fragmentView, CommunicationContract.ActivityView activityView) {
         this.fragmentView = fragmentView;
         this.activityView = activityView;
         bluetoothConnectionService = ((BluetoothApplication) activityView.getApplicationInstance()).getService();
@@ -128,7 +128,6 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
             temp = new Message(false, null, System.currentTimeMillis(), saveReceivedImageInInternalStorage(message.getSelectedImageUri().toString().getBytes()));
             messageList.add(temp);
         }
-//        fragmentView.updateConversationAdapter(messageList);
         fragmentView.updateConversation(temp);
     }
 
@@ -147,7 +146,6 @@ public class CommunicationPresenter implements CommunicationContract.Presenter, 
             messageList.add(temp);
             Log.d(TAG, "onMessageSent: IMAGE IS SENT");
         }
-//        fragmentView.updateConversationAdapter(messageList);
         fragmentView.updateConversation(temp);
     }
 

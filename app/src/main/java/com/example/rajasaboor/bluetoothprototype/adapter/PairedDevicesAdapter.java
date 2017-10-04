@@ -89,6 +89,7 @@ public class PairedDevicesAdapter extends RecyclerView.Adapter<PairedDevicesAdap
 
     public void updateList(List<BluetoothDevice> deviceList) {
         this.deviceList = deviceList;
+
         notifyDataSetChanged();
     }
 
