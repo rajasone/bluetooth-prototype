@@ -111,7 +111,7 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
         } else {
             Log.d(TAG, "updateConversation: Conversation adapter is NULL ! Not able to update the adapter");
         }
-        presenter.deleteImagesDirectory(getImagesDirectory());
+//        presenter.deleteImagesDirectory(getImagesDirectory());
         printConversation();
     }
 
@@ -131,6 +131,12 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
 
     @Override
     public File getImagesDirectory() {
-        return getContext().getDir(BuildConfig.IMAGES_DIR_NAME, Context.MODE_PRIVATE);
+        try {
+            return getContext().getDir(BuildConfig.IMAGES_DIR_NAME, Context.MODE_PRIVATE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

@@ -90,6 +90,7 @@ public class CommunicationActivity extends AppCompatActivity implements Communic
                 break;
         }
         Log.d(TAG, "onActivityResult: end");
+
     }
 
     @Override
