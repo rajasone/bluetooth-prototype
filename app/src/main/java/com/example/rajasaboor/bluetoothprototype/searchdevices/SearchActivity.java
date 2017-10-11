@@ -3,6 +3,7 @@ package com.example.rajasaboor.bluetoothprototype.searchdevices;
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -20,7 +21,6 @@ import com.example.rajasaboor.bluetoothprototype.databinding.ActivityMainBinding
 public class SearchActivity extends AppCompatActivity implements SearchContract.ActivityView {
     private static final String TAG = SearchActivity.class.getSimpleName();
     private SearchContract.Presenter presenter;
-    private SearchFragment searchFragment;
     private ActivityMainBinding mainBinding;
 
     @Override
@@ -28,11 +28,8 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         super.onCreate(savedInstanceState);
         mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         setSupportActionBar(mainBinding.includeToolbar.bluetoothToolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Bluetooth Prototype");
-        }
 
-        searchFragment = (SearchFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
+        SearchFragment searchFragment = (SearchFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_container);
         if (searchFragment == null) {
             searchFragment = SearchFragment.newInstance();
             getSupportFragmentManager().beginTransaction()
@@ -45,7 +42,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         mainBinding.includeToolbar.bluetoothOnOff.setOnCheckedChangeListener(searchFragment);
 
         if (savedInstanceState != null) {
-            presenter.setDeviceDiscoveryInProgress(savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS));
+            presenter.setDeviceDiscoveryInProgress(savedInstanceState.getBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS, false));
             presenter.setDeviceDiscoveryForChatActivity((savedInstanceState.getBoolean(BuildConfig.IS_SEARCH_FOR_CHAT, false)));
         }
     }
@@ -56,31 +53,18 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         Log.d(TAG, "onResume: start");
         super.onResume();
 
-        setUpViews();
+        presenter.loadViewBasedOnBluetoothState();
         registerBluetoothEnableBroadcast();
-
-        if (presenter.isDeviceDiscoveryInProgress() || presenter.isDeviceDiscoveryForChatActivity()) {
-            presenter.registerDeviceDiscoveryBroadcast();
-        }
-
-        if (((BluetoothApplication) getApplicationInstance()).getService() == null && BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-            Log.e(TAG, "onResume: Setting up the connection service");
-            ((BluetoothApplication) getApplicationInstance()).startService();
-        }
+        presenter.registerDeviceDiscoveryAndStartService();
 
         Log.d(TAG, "onResume: end");
     }
 
-    void setUpViews() {
-        Log.d(TAG, "setUpViews: Default adapter is enable ? ===>" + BluetoothAdapter.getDefaultAdapter().isEnabled());
-        if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-            searchFragment.showViews(true);
-            mainBinding.includeToolbar.bluetoothOnOff.setChecked(true);
-            searchFragment.updateListSize(presenter.getPairedDevices().size(), true);
-        } else {
-            searchFragment.showViews(false);
-            mainBinding.includeToolbar.bluetoothOnOff.setChecked(false);
-        }
+    public void registerBluetoothEnableBroadcast() {
+        presenter.checkAndRegisterBluetoothEnableReceiver();
+        IntentFilter enableFilter = new IntentFilter();
+        enableFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(presenter.getBluetoothEnableReceiver(), enableFilter);
     }
 
     @Override
@@ -124,25 +108,9 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS, presenter.isDeviceDiscoveryInProgress());
+        outState.putBoolean(BuildConfig.IS_SEARCH_FOR_CHAT, presenter.isDeviceDiscoveryForChatActivity());
 
-        if (presenter.isDeviceDiscoveryInProgress()) {
-            outState.putBoolean(BuildConfig.IS_SEARCHING_IN_PROGRESS, true);
-        }
-
-        if (presenter.isDeviceDiscoveryForChatActivity()) {
-            outState.putBoolean(BuildConfig.IS_SEARCH_FOR_CHAT, presenter.isDeviceDiscoveryForChatActivity());
-        }
-
-    }
-
-    @Override
-    public void registerBluetoothDiscoveryBroadcast() {
-        if (presenter.getDiscoveryReceiver() == null) {
-            Log.d(TAG, "registerBluetoothDiscoveryBroadcast: Defining the broadcast");
-            presenter.broadcastDefine();
-        }
-        registerReceiver(presenter.getDiscoveryReceiver(), presenter.getBlutoothDiscoveryIntent());
-        presenter.setDeviceDiscoveryInProgress(true);
     }
 
     @Override
@@ -154,17 +122,6 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         }
     }
 
-    @Override
-    public void registerBluetoothEnableBroadcast() {
-        if (presenter.getBluetoothEnableReceiver() == null) {
-            presenter.defineBluetoothEnableBroadcast();
-            Log.d(TAG, "registerBluetoothEnableBroadcast: Registering the enable or disable broadcast successfully");
-        }
-
-        IntentFilter enableFilter = new IntentFilter();
-        enableFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(presenter.getBluetoothEnableReceiver(), enableFilter);
-    }
 
     @Override
     public void registerPairBroadcast() {
@@ -177,8 +134,18 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         return getApplication();
     }
 
+
     @Override
-    public void unregisterBluetoothEnableBroadcast() {
+    public void checkBluetoothSwitch(boolean check) {
+        mainBinding.includeToolbar.bluetoothOnOff.setChecked(check);
+    }
+
+    @Override
+    public void registerBroadcastReceiver(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter) {
+        registerReceiver(broadcastReceiver, intentFilter);
+    }
+
+    void unregisterBluetoothEnableBroadcast() {
         if (presenter.getBluetoothEnableReceiver() != null) {
             unregisterReceiver(presenter.getBluetoothEnableReceiver());
             Log.d(TAG, "unregisterBluetoothEnableBroadcast: Unregister the bluetooth enable or disable broadcast successfully");
@@ -186,7 +153,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
         }
     }
 
-    public void unregisterPairBroadcast() {
+    void unregisterPairBroadcast() {
         if (presenter.getPairBroadcast() != null) {
             unregisterReceiver(presenter.getPairBroadcast());
             presenter.setPairBroadcast(null);

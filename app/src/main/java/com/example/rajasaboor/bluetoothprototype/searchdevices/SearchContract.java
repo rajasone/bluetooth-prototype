@@ -20,21 +20,17 @@ import java.util.List;
  * Created by rajaSaboor on 9/8/2017.
  */
 
-public interface SearchContract {
+interface SearchContract {
     interface ActivityView {
-        void registerBluetoothDiscoveryBroadcast();
-
         void unregisterBluetoothDiscoveryBroadcast();
-
-        void registerBluetoothEnableBroadcast();
-
-        void unregisterBluetoothEnableBroadcast();
-
-        void unregisterPairBroadcast();
 
         void registerPairBroadcast();
 
         Application getApplicationInstance();
+
+        void checkBluetoothSwitch(boolean check);
+
+        void registerBroadcastReceiver(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter);
     }
 
     interface FragmentView {
@@ -44,21 +40,11 @@ public interface SearchContract {
 
         void showAvailableDeviceInRecyclerView(List<BluetoothDevice> deviceList, boolean isDiscoverAdapter);
 
-        void permissionsValidation(String permission);
-
-        boolean isDeviceHaveBluetoothAndPermissionGranted();
-
         void showToast(String message, int resourceID);
-
-        void resetAdapter(boolean resetPairedAdapter);
 
         void updateListSize(int listSize, boolean isPairedList);
 
-        void resetListSizeTextViews();
-
         void showDiscoveryProgressBar(boolean show);
-
-        void showPopUpMenu(BluetoothDevice device, View view);
 
         void startChatActivity();
 
@@ -128,5 +114,13 @@ public interface SearchContract {
         Handler getHandler();
 
         void defineHandler();
+
+        void registerDeviceDiscoveryAndStartService();
+
+        void checkAndRegisterBluetoothEnableReceiver();
+
+        void loadViewBasedOnBluetoothState();
+
+        void checkAndDefineBluetoothDiscoveryBroadcast();
     }
 }

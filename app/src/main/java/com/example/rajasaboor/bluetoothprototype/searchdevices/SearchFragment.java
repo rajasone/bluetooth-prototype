@@ -68,19 +68,15 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         Log.d(TAG, "onCreate: end");
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onActivityCreated: start");
-        super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "onActivityCreated: end");
-    }
-
     public void invokePermissions(String permission, int requestCode) {
         if (!(checkSelfPermission(permission))) {
             Log.d(TAG, "invokePermissions: Requesting the permission for ====> " + permission);
             requestPermissions(new String[]{permission}, requestCode);
-
         }
+    }
+
+    public boolean checkSelfPermission(String permission) {
+        return (ContextCompat.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_GRANTED);
     }
 
 
@@ -116,10 +112,8 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     }
 
     public void openBluetoothIntent() {
-        Log.d(TAG, "openBluetoothIntent: start");
         Intent bluetoothIntent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
         startActivity(bluetoothIntent);
-        Log.d(TAG, "openBluetoothIntent: end");
     }
 
 
@@ -167,8 +161,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         Log.d(TAG, "onSaveInstanceState: end");
     }
 
-    @Override
-    public void permissionsValidation(String permission) {
+    void permissionsValidation(String permission) {
         Log.d(TAG, "permissionsValidation: start");
         int selfPermissionForCoarseLocation = ContextCompat.checkSelfPermission(getContext(), permission);
 
@@ -185,8 +178,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     }
 
 
-    @Override
-    public boolean isDeviceHaveBluetoothAndPermissionGranted() {
+    boolean isDeviceHaveBluetoothAndPermissionGranted() {
         boolean result = false;
 
         if (presenter.isDeviceBluetoothIsTurnedOn() && presenter.isPermissionGranted(getContext().getPackageManager(),
@@ -212,8 +204,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
     * if resetPairedAdapter is true reset the Paired adapter
     * Else reset the Discovery adapter
      */
-    @Override
-    public void resetAdapter(boolean resetPairedAdapter) {
+    void resetAdapter(boolean resetPairedAdapter) {
         if (resetPairedAdapter) {
             showAvailableDeviceInRecyclerView(new ArrayList<BluetoothDevice>(), false);
         } else {
@@ -233,8 +224,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         }
     }
 
-    @Override
-    public void resetListSizeTextViews() {
+    void resetListSizeTextViews() {
         mainFragmentBinding.numberOfAvailableDevices.setText("0");
     }
 
@@ -243,8 +233,7 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         mainFragmentBinding.discoverProgressBar.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
-    @Override
-    public void showPopUpMenu(final BluetoothDevice device, View view) {
+    void showPopUpMenu(final BluetoothDevice device, View view) {
         Log.d(TAG, "showPopUpMenu: start");
         PopupMenu popupMenu = new PopupMenu(getContext(), view);
         getActivity().getMenuInflater().inflate(R.menu.popup_menu, popupMenu.getMenu());
@@ -392,9 +381,6 @@ public class SearchFragment extends Fragment implements SearchContract.FragmentV
         this.presenter = presenter;
     }
 
-    public boolean checkSelfPermission(String permission) {
-        return (ContextCompat.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_GRANTED);
-    }
 
     @Override
     public void enableSearchButton(boolean enable) {

@@ -107,7 +107,11 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
 
     @Override
     public void saveBitmapToFile(Bitmap bitmap, OutputStream outputStream) {
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream);
+        try {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -201,7 +205,7 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
                 Log.d(TAG, "deleteImagesDirectory: File Name ---->" + content.getName());
 //                deleteImagesDirectory(content);
             }
-        }else{
+        } else {
             Log.d(TAG, "deleteImagesDirectory: This isn't a directory");
         }
         Log.d(TAG, "deleteImagesDirectory: end");

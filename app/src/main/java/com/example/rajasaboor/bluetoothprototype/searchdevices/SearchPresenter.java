@@ -162,7 +162,7 @@ public class SearchPresenter implements SearchContract.Presenter {
     @Override
     public void registerDeviceDiscoveryBroadcast() {
         setDeviceDiscoveryInProgress(true);
-        activityView.registerBluetoothDiscoveryBroadcast();
+        checkAndDefineBluetoothDiscoveryBroadcast();
         fragmentView.enableSearchButton(false);
     }
 
@@ -351,4 +351,48 @@ public class SearchPresenter implements SearchContract.Presenter {
         }
     }
 
+    @Override
+    public void registerDeviceDiscoveryAndStartService() {
+        Log.d(TAG, "registerDeviceDiscoveryAndStartService: start");
+        if (isDeviceDiscoveryInProgress() || isDeviceDiscoveryForChatActivity()) {
+            registerDeviceDiscoveryBroadcast();
+        }
+
+        if ((((BluetoothApplication) activityView.getApplicationInstance()).getService() == null) && (BluetoothAdapter.getDefaultAdapter().isEnabled())) {
+            Log.e(TAG, "registerDeviceDiscoveryAndStartService: Setting up the connection service");
+            ((BluetoothApplication) activityView.getApplicationInstance()).startService();
+        }
+        Log.d(TAG, "registerDeviceDiscoveryAndStartService: end");
+    }
+
+    @Override
+    public void checkAndRegisterBluetoothEnableReceiver() {
+        if (getBluetoothEnableReceiver() == null) {
+            defineBluetoothEnableBroadcast();
+            Log.d(TAG, "checkAndRegisterBluetoothEnableReceiver: Registering the enable or disable broadcast successfully");
+        }
+    }
+
+    @Override
+    public void loadViewBasedOnBluetoothState() {
+        if (isDeviceBluetoothIsTurnedOn()) {
+            fragmentView.showViews(true);
+            activityView.checkBluetoothSwitch(true);
+            fragmentView.updateListSize(getPairedDevices().size(), true);
+        } else {
+            fragmentView.showViews(false);
+            activityView.checkBluetoothSwitch(false);
+        }
+    }
+
+    @Override
+    public void checkAndDefineBluetoothDiscoveryBroadcast() {
+        if (getDiscoveryReceiver() == null) {
+            Log.d(TAG, "checkAndDefineBluetoothDiscoveryBroadcast: Defining the broadcast");
+            broadcastDefine();
+        }
+
+        activityView.registerBroadcastReceiver(getDiscoveryReceiver(), getBlutoothDiscoveryIntent());
+        setDeviceDiscoveryInProgress(true);
+    }
 }
