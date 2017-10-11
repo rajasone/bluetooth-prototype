@@ -61,19 +61,8 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
         this.messageList = messageList;
     }
 
-    @Override
-    public void defineConversationHandler() {
+    private void defineConversationHandler() {
         Log.d(TAG, "defineConversationHandler: start");
-
-        /*
-        if (((BluetoothApplication) activityView.getApplicationInstance()).getService().getConnectionHandler() != null) {
-            Log.d(TAG, "defineConversationHandler: Handler is not NULL | Setting it to the NULL");
-            ((BluetoothApplication) activityView.getApplicationInstance()).getService().setConnectionHandler(null);
-        } else {
-            Log.d(TAG, "defineConversationHandler: Handler is already NULL");
-        }
-        */
-
         ((BluetoothApplication) activityView.getApplicationInstance()).getService().setCommunicationHandler(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(android.os.Message msg) {
@@ -106,23 +95,6 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
     }
 
     @Override
-    public void saveBitmapToFile(Bitmap bitmap, OutputStream outputStream) {
-        try {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public String getEncodedStringFromBitmap(Bitmap bitmap) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream);
-        return Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT);
-
-    }
-
-    @Override
     public void onMessageReceived(Message message) {
         Message temp = null;
         if (message.getMyMessage() != null) {
@@ -138,27 +110,7 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
         fragmentView.updateConversation(temp);
     }
 
-    @Override
-    public void onMessageSent(Message message) {
-        Message temp = null;
-
-        if (message.getMyMessage() != null) {
-            temp = new Message(true, message.getMyMessage(), message.getMessageTime(), null);
-            Log.d(TAG, "onMessageSent: Size of the list before insertion ====> " + getMessageList().size());
-            messageList.add(temp);
-            Log.d(TAG, "onMessageSent: Size of the list after insertion ====> " + getMessageList().size());
-            Log.e(TAG, "onMessageSent: STRING IS SENT");
-        } else {
-            temp = new Message(true, null, message.getMessageTime(), message.getSelectedImageUri());
-            messageList.add(temp);
-            Log.d(TAG, "onMessageSent: IMAGE IS SENT");
-        }
-        fragmentView.updateConversation(temp);
-    }
-
-
-    @Override
-    public Uri saveReceivedImageInInternalStorage(byte[] imageInByte) {
+    private Uri saveReceivedImageInInternalStorage(byte[] imageInByte) {
         Uri imageUri = null;
         if (fragmentView.getImagesDirectory() != null) {
             imageUri = convertBitmapIntoFile(convertBytesArrayIntoImage(imageInByte));
@@ -169,9 +121,20 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
         return imageUri;
     }
 
+    private Bitmap convertBytesArrayIntoImage(byte[] rawImage) {
+        Bitmap bitmap = null;
 
-    @Override
-    public Uri convertBitmapIntoFile(Bitmap bitmap) {
+        try {
+            byte[] decodedString = Base64.decode(rawImage, Base64.DEFAULT);
+            bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+
+    private Uri convertBitmapIntoFile(Bitmap bitmap) {
         String fileName = "test_image_" + UUID.randomUUID() + ".jpg";
         Log.d(TAG, "convertBitmapIntoFile: File Name ====> " + fileName);
         File pathFile = new File(fragmentView.getImagesDirectory(), fileName);
@@ -196,7 +159,33 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
         return imageUri;
     }
 
+    private void saveBitmapToFile(Bitmap bitmap, OutputStream outputStream) {
+        try {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
+    public void onMessageSent(Message message) {
+        Message temp = null;
+
+        if (message.getMyMessage() != null) {
+            temp = new Message(true, message.getMyMessage(), message.getMessageTime(), null);
+            Log.d(TAG, "onMessageSent: Size of the list before insertion ====> " + getMessageList().size());
+            messageList.add(temp);
+            Log.d(TAG, "onMessageSent: Size of the list after insertion ====> " + getMessageList().size());
+            Log.e(TAG, "onMessageSent: STRING IS SENT");
+        } else {
+            temp = new Message(true, null, message.getMessageTime(), message.getSelectedImageUri());
+            messageList.add(temp);
+            Log.d(TAG, "onMessageSent: IMAGE IS SENT");
+        }
+        fragmentView.updateConversation(temp);
+    }
+
+
     public void deleteImagesDirectory(File file) {
         Log.d(TAG, "deleteImagesDirectory: start");
 
@@ -210,18 +199,6 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
         }
         Log.d(TAG, "deleteImagesDirectory: end");
 //        file.delete();
-    }
-
-    private Bitmap convertBytesArrayIntoImage(byte[] rawImage) {
-        Bitmap bitmap = null;
-
-        try {
-            byte[] decodedString = Base64.decode(rawImage, Base64.DEFAULT);
-            bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return bitmap;
     }
 
     @Override
@@ -240,6 +217,12 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
         // TODO: 10/2/2017 Calling the send image from here
         sendMessage(getEncodedStringFromBitmap(loadedImage), Uri.parse(imageUri));
 
+    }
+
+    private String getEncodedStringFromBitmap(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream);
+        return Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT);
     }
 
     @Override

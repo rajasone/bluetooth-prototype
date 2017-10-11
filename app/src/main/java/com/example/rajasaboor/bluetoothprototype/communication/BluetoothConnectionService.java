@@ -42,15 +42,7 @@ public class BluetoothConnectionService {
         this.connectionHandler = connectionHandler;
     }
 
-    public Handler getConnectionHandler() {
-        return connectionHandler;
-    }
-
-    public Handler getCommunicationHandler() {
-        return communicationHandler;
-    }
-
-    public void setCommunicationHandler(Handler communicationHandler) {
+    void setCommunicationHandler(Handler communicationHandler) {
         this.communicationHandler = communicationHandler;
     }
 
@@ -373,10 +365,6 @@ public class BluetoothConnectionService {
         void onMessageReceived(com.example.rajasaboor.bluetoothprototype.model.Message message);
 
         void onMessageSent(com.example.rajasaboor.bluetoothprototype.model.Message message);
-    }
-
-    public MessageListener getMessageListener() {
-        return messageListener;
     }
 
     public void setMessageListener(MessageListener messageListener) {

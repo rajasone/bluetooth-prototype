@@ -39,17 +39,5 @@ interface CommunicationContract {
         List<Message> getMessageList();
 
         void setMessageList(List<Message> messageList);
-
-        void defineConversationHandler();
-
-        void saveBitmapToFile(Bitmap bitmap, OutputStream outputStream);
-
-        String getEncodedStringFromBitmap(Bitmap bitmap);
-
-        Uri saveReceivedImageInInternalStorage(byte[] imageInByte);
-
-        Uri convertBitmapIntoFile(Bitmap bitmap);
-
-        void deleteImagesDirectory(File file);
     }
 }
