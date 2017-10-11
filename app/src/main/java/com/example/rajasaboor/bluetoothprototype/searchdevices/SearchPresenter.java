@@ -49,8 +49,36 @@ public class SearchPresenter implements SearchContract.Presenter {
         this.activityView = activityView;
         this.fragmentView = fragmentView;
 
-        defineHandler();
+        defineConnectionHandler();
     }
+
+    private void defineConnectionHandler() {
+        Log.d(TAG, "defineConnectionHandler: start");
+        if (((BluetoothApplication) activityView.getApplicationInstance()).getService() == null) {
+            return;
+        }
+
+        try {
+            ((BluetoothApplication) activityView.getApplicationInstance()).getService().setConnectionHandler(new Handler(Looper.getMainLooper()) {
+                @Override
+                public void handleMessage(Message message) {
+                    Log.d(TAG, "handleMessage: MEssage arg 1 ---> " + message.arg1);
+                    if (message.arg1 == BuildConfig.CONNECTED_SUCCESSFULLY) {
+                        fragmentView.showToast((((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), R.string.connected_with);
+                        fragmentView.startChatActivity();
+                    } else {
+                        if (message.obj != null) {
+                            fragmentView.showToast((((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), R.string.failed_to_connect);
+                        }
+                    }
+                }
+            });
+            Log.d(TAG, "defineConnectionHandler: end");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     public boolean isDeviceHaveBluetooth() {
@@ -67,74 +95,8 @@ public class SearchPresenter implements SearchContract.Presenter {
         return (manager.checkPermission(permission, packageName) == PackageManager.PERMISSION_GRANTED);
     }
 
-    @Override
-    public void broadcastDefine() {
-        Log.d(TAG, "broadcastDefine: start");
-        bluetoothDiscoveryReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Log.d(TAG, "onReceive: start");
-                if (BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
-                    Log.d(TAG, "onReceive: Device Found");
-                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-                    if ((device.getAddress() != null) && (!discoveryDevicesList.contains(device))) {
-                        Log.d(TAG, "onReceive: Device Type ---> " + device.getBluetoothClass().getDeviceClass());
-                        discoveryDevicesList.add(device);
-                        fragmentView.updateListSize(discoveryDevicesList.size(), false);
-                        fragmentView.showAvailableDeviceInRecyclerView(discoveryDevicesList, true);
-                    } else {
-                        Log.e(TAG, "onReceive: Device is not full filling the condition ===> " + device.getName());
-                    }
-                } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
-                    Log.d(TAG, "onReceive: Discovery End");
-                    fragmentView.updateListSize(discoveryDevicesList.size(), false);
-                    setDeviceDiscoveryInProgress(false);
-                    fragmentView.enableSearchButton(true);
-                    fragmentView.showDiscoveryProgressBar(false);
-                    if (isDeviceDiscoveryForChatActivity()) {
-                        fragmentView.isSelectedDeviceIsReachable();
-                    }
-                    setDeviceDiscoveryForChatActivity(false);
-                }
-                Log.d(TAG, "onReceive: end");
-            }
-        };
-        Log.d(TAG, "broadcastDefine: end");
-    }
-
-    @Override
-    public void defineBluetoothEnableBroadcast() {
-        Log.d(TAG, "defineBluetoothEnableBroadcast: start");
-        bluetoothEnableReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                final String action = intent.getAction();
-                Log.d(TAG, "onReceive: Enable action ===> " + action);
-                if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-                    final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-                            BluetoothAdapter.ERROR);
-                    Log.d(TAG, "onReceive: State ====> " + state);
-                    switch (state) {
-                        case BluetoothAdapter.STATE_OFF:
-                            Log.d(TAG, "onReceive: OFF");
-                            break;
-                        case BluetoothAdapter.STATE_ON:
-                            Log.d(TAG, "onReceive: ON");
-                            fragmentView.showAvailableDeviceInRecyclerView(getPairedDevices(), false);
-                            fragmentView.updateListSize(getPairedDevices().size(), true);
-                            ((BluetoothApplication) activityView.getApplicationInstance()).startService();
-                            defineHandler();
-                            break;
-                    }
-                }
-            }
-        };
-        Log.d(TAG, "defineBluetoothEnableBroadcast: end");
-    }
-
-    @Override
-    public IntentFilter getBlutoothDiscoveryIntent() {
+    private IntentFilter getBlutoothDiscoveryIntent() {
         BluetoothAdapter.getDefaultAdapter().startDiscovery();
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
@@ -165,6 +127,17 @@ public class SearchPresenter implements SearchContract.Presenter {
         checkAndDefineBluetoothDiscoveryBroadcast();
         fragmentView.enableSearchButton(false);
     }
+
+    private void checkAndDefineBluetoothDiscoveryBroadcast() {
+        if (getDiscoveryReceiver() == null) {
+            Log.d(TAG, "checkAndDefineBluetoothDiscoveryBroadcast: Defining the broadcast");
+            deviceDiscoveryBroadcastDefine();
+        }
+
+        activityView.registerBroadcastReceiver(getDiscoveryReceiver(), getBlutoothDiscoveryIntent());
+        setDeviceDiscoveryInProgress(true);
+    }
+
 
     @Override
     public boolean isDeviceDiscoveryInProgress() {
@@ -317,40 +290,6 @@ public class SearchPresenter implements SearchContract.Presenter {
         this.selectedDevice = selectedDevice;
     }
 
-
-    @Override
-    public Handler getHandler() {
-        return ((BluetoothApplication) activityView.getApplicationInstance()).getService().getConnectionHandler();
-    }
-
-    @Override
-    public void defineHandler() {
-        Log.d(TAG, "defineHandler: start");
-        if (((BluetoothApplication) activityView.getApplicationInstance()).getService() == null) {
-            return;
-        }
-
-        try {
-            ((BluetoothApplication) activityView.getApplicationInstance()).getService().setConnectionHandler(new Handler(Looper.getMainLooper()) {
-                @Override
-                public void handleMessage(Message message) {
-                    Log.d(TAG, "handleMessage: MEssage arg 1 ---> " + message.arg1);
-                    if (message.arg1 == BuildConfig.CONNECTED_SUCCESSFULLY) {
-                        fragmentView.showToast((((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), R.string.connected_with);
-                        fragmentView.startChatActivity();
-                    } else {
-                        if (message.obj != null) {
-                            fragmentView.showToast((((BluetoothDevice) message.obj).getName() != null ? ((BluetoothDevice) message.obj).getName() : ((BluetoothDevice) message.obj).getAddress()), R.string.failed_to_connect);
-                        }
-                    }
-                }
-            });
-            Log.d(TAG, "defineHandler: end");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public void registerDeviceDiscoveryAndStartService() {
         Log.d(TAG, "registerDeviceDiscoveryAndStartService: start");
@@ -385,14 +324,68 @@ public class SearchPresenter implements SearchContract.Presenter {
         }
     }
 
-    @Override
-    public void checkAndDefineBluetoothDiscoveryBroadcast() {
-        if (getDiscoveryReceiver() == null) {
-            Log.d(TAG, "checkAndDefineBluetoothDiscoveryBroadcast: Defining the broadcast");
-            broadcastDefine();
-        }
 
-        activityView.registerBroadcastReceiver(getDiscoveryReceiver(), getBlutoothDiscoveryIntent());
-        setDeviceDiscoveryInProgress(true);
+    private void deviceDiscoveryBroadcastDefine() {
+        Log.d(TAG, "deviceDiscoveryBroadcastDefine: start");
+        bluetoothDiscoveryReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(TAG, "onReceive: start");
+                if (BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
+                    Log.d(TAG, "onReceive: Device Found");
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                    if ((device.getAddress() != null) && (!discoveryDevicesList.contains(device))) {
+                        Log.d(TAG, "onReceive: Device Type ---> " + device.getBluetoothClass().getDeviceClass());
+                        discoveryDevicesList.add(device);
+                        fragmentView.updateListSize(discoveryDevicesList.size(), false);
+                        fragmentView.showAvailableDeviceInRecyclerView(discoveryDevicesList, true);
+                    } else {
+                        Log.e(TAG, "onReceive: Device is not full filling the condition ===> " + device.getName());
+                    }
+                } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(intent.getAction())) {
+                    Log.d(TAG, "onReceive: Discovery End");
+                    fragmentView.updateListSize(discoveryDevicesList.size(), false);
+                    setDeviceDiscoveryInProgress(false);
+                    fragmentView.enableSearchButton(true);
+                    fragmentView.showDiscoveryProgressBar(false);
+                    if (isDeviceDiscoveryForChatActivity()) {
+                        fragmentView.isSelectedDeviceIsReachable();
+                    }
+                    setDeviceDiscoveryForChatActivity(false);
+                }
+                Log.d(TAG, "onReceive: end");
+            }
+        };
+        Log.d(TAG, "deviceDiscoveryBroadcastDefine: end");
+    }
+
+    private void defineBluetoothEnableBroadcast() {
+        Log.d(TAG, "defineBluetoothEnableBroadcast: start");
+        bluetoothEnableReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String action = intent.getAction();
+                Log.d(TAG, "onReceive: Enable action ===> " + action);
+                if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                    final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                            BluetoothAdapter.ERROR);
+                    Log.d(TAG, "onReceive: State ====> " + state);
+                    switch (state) {
+                        case BluetoothAdapter.STATE_OFF:
+                            Log.d(TAG, "onReceive: OFF");
+                            break;
+                        case BluetoothAdapter.STATE_ON:
+                            Log.d(TAG, "onReceive: ON");
+                            fragmentView.showAvailableDeviceInRecyclerView(getPairedDevices(), false);
+                            fragmentView.updateListSize(getPairedDevices().size(), true);
+                            ((BluetoothApplication) activityView.getApplicationInstance()).startService();
+                            defineConnectionHandler();
+                            break;
+                    }
+                }
+            }
+        };
+        Log.d(TAG, "defineBluetoothEnableBroadcast: end");
     }
 }

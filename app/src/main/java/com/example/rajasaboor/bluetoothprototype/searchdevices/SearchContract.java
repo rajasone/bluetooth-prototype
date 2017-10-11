@@ -59,10 +59,6 @@ interface SearchContract {
 
         boolean isPermissionGranted(PackageManager manager, String permission, String packageName);
 
-        void broadcastDefine();
-
-        IntentFilter getBlutoothDiscoveryIntent();
-
         BroadcastReceiver getDiscoveryReceiver();
 
         void setDiscoveryReceiver(BroadcastReceiver receiver);
@@ -78,8 +74,6 @@ interface SearchContract {
         BroadcastReceiver getBluetoothEnableReceiver();
 
         void setBluetoothEnableReceiver(BroadcastReceiver bluetoothEnableReceiver);
-
-        void defineBluetoothEnableBroadcast();
 
         void turnOnBluetooth(boolean turnOn);
 
@@ -111,16 +105,10 @@ interface SearchContract {
 
         void setSelectedDevice(BluetoothDevice selectedDevice);
 
-        Handler getHandler();
-
-        void defineHandler();
-
         void registerDeviceDiscoveryAndStartService();
 
         void checkAndRegisterBluetoothEnableReceiver();
 
         void loadViewBasedOnBluetoothState();
-
-        void checkAndDefineBluetoothDiscoveryBroadcast();
     }
 }
