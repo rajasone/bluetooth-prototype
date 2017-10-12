@@ -6,11 +6,17 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.example.rajasaboor.bluetoothprototype.BuildConfig;
@@ -30,8 +36,9 @@ import java.util.Locale;
  * Created by rajaSaboor on 9/27/2017.
  */
 
-public class CommunicationFragment extends Fragment implements CommunicationContract.FragmentView, View.OnClickListener {
+public class CommunicationFragment extends Fragment implements CommunicationContract.FragmentView, View.OnClickListener{
     private static final String TAG = CommunicationFragment.class.getSimpleName();
+    public static final String IMAGES_DIR_NAME = "images";
     private CommunicationFragmentBinding communicationFragmentBinding;
     private CommunicationContract.Presenter presenter;
 
@@ -51,7 +58,26 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
             ((ConversationAdapter) communicationFragmentBinding.conversationRecyclerView.getAdapter()).updateList(presenter.getMessageList());
         }
 
+
         return communicationFragmentBinding.getRoot();
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        Log.d(TAG, "onCreateContextMenu: start");
+        switch (v.getId()) {
+            case R.id.conversation_recycler_view:
+                Log.d(TAG, "onCreateContextMenu: Inside the recycler view");
+                RecyclerView recyclerView = (RecyclerView) v;
+                AdapterView.AdapterContextMenuInfo contextMenuInfo = (AdapterView.AdapterContextMenuInfo) menuInfo;
+                Log.d(TAG, "onCreateContextMenu: Position ----> " + contextMenuInfo.position);
+                menu.add("1");
+                menu.add("2");
+                menu.add("3");
+                menu.add("4");
+                break;
+        }
+        Log.d(TAG, "onCreateContextMenu: end");
     }
 
     public void setPresenter(CommunicationContract.Presenter presenter) {
@@ -132,7 +158,8 @@ public class CommunicationFragment extends Fragment implements CommunicationCont
     @Override
     public File getImagesDirectory() {
         try {
-            return getContext().getDir(BuildConfig.IMAGES_DIR_NAME, Context.MODE_PRIVATE);
+//            return getContext().getDir(CommunicationFragment.IMAGES_DIR_NAME, Context.MODE_PRIVATE);
+            return getContext().getFilesDir();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -124,6 +124,7 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
     private Bitmap convertBytesArrayIntoImage(byte[] rawImage) {
         Bitmap bitmap = null;
 
+
         try {
             byte[] decodedString = Base64.decode(rawImage, Base64.DEFAULT);
             bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
@@ -161,7 +162,7 @@ class CommunicationPresenter implements CommunicationContract.Presenter, Bluetoo
 
     private void saveBitmapToFile(Bitmap bitmap, OutputStream outputStream) {
         try {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 10, outputStream);
         } catch (Exception e) {
             e.printStackTrace();
         }

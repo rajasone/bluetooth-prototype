@@ -8,9 +8,14 @@
         <variable
             name="message"
             type="com.example.rajasaboor.bluetoothprototype.model.Message" />
+
+        <variable
+            name="conversationHandler"
+            type="com.example.rajasaboor.bluetoothprototype.adapter.ConversationAdapter" />
     </data>
 
     <LinearLayout
+        android:id="@+id/parent_communication"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">

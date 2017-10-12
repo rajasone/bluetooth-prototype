@@ -41,7 +41,6 @@ android {
         buildConfigField "int", "FAILED_TO_SEND_MESSAGE", "-1"
         buildConfigField "int", "IMAGES_REQUEST_CODE", "1009"
         buildConfigField "String", "IS_IMAGE_SELECTED", '"is_image_se"'
-        buildConfigField "String", "IMAGES_DIR_NAME", '"dir"'
     }
 
     dataBinding {

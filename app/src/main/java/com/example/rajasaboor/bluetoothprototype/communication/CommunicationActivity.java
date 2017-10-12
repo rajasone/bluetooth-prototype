@@ -22,7 +22,6 @@ public class CommunicationActivity extends AppCompatActivity implements Communic
     private static final String TAG = CommunicationActivity.class.getSimpleName();
     private static final int PREVIEW_ACTIVITY_REQUEST_CODE = 9001;
     private CommunicationContract.Presenter presenter;
-    private CommunicationFragment communicationFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +32,7 @@ public class CommunicationActivity extends AppCompatActivity implements Communic
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        communicationFragment = (CommunicationFragment) getSupportFragmentManager().findFragmentById(R.id.communication_fragment_container);
+        CommunicationFragment communicationFragment = (CommunicationFragment) getSupportFragmentManager().findFragmentById(R.id.communication_fragment_container);
 
         if (communicationFragment == null) {
             communicationFragment = CommunicationFragment.newInstance();
